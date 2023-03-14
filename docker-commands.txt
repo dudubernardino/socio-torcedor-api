@@ -1,0 +1,23 @@
+docker build -t iac-api:latest .
+
+# se quiser testar
+docker run  -d -p 3000:3000 --name iac-api iac-api:latest
+
+docker run  -d -p 3000:3000 --name iac-api iac-api:latest
+
+docker login 
+
+docker tag iac-api:latest dudubernardino/iac-api:latest
+
+docker push dudubernardino/iac-api:latest
+
+---------------------------------------------
+
+gcloud init
+
+gcloud auth application-default login
+
+---------------------------------------------
+
+ativar API e Serviços
+ativar IAM - https://cloud.google.com/iam/docs/service-accounts-disable-enable

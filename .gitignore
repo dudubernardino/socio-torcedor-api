@@ -33,3 +33,14 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.env
+
+# terraform
+*.tfstate
+*.tfstate.*
+.terraform
+.terraform.lock.hcl
+.env copy
+/infra/terraform/credentials.json
+
+

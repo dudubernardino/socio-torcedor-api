@@ -18,15 +18,26 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm-ts": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "migration:up": "yarn typeorm-ts -d ./libs/database/app-data-source.ts migration:run",
+    "migration:generate": "yarn typeorm-ts -d ./libs/database/app-data-source.ts migration:generate ./libs/database/migrations/generated_migration",
+    "migration:create": "yarn typeorm-ts migration:create",
+    "migration:down": "yarn typeorm-ts -d ./libs/database/app-data-source.ts migration:revert"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
+    "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/swagger": "^6.2.1",
+    "@nestjs/typeorm": "9.0.1",
+    "class-validator": "^0.14.0",
+    "pg": "^8.9.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "typeorm": "0.3.11"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
@@ -66,6 +77,22 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/dist/",
+      "<rootDir>/node_modules/",
+      "<rootDir>/libs/database/migrations",
+      "<rootDir>/libs/database/seeds",
+      "^.*\\.e2e-spec\\.[jt]sx?$",
+      ".*module.ts$"
+    ],
+    "roots": [
+      "<rootDir>/apps/",
+      "<rootDir>/libs/"
+    ],
+    "moduleNameMapper": {
+      "@lib/database(|/.*)$": "<rootDir>/libs/database/$1",
+      "@lib/entities(|/.*)$": "<rootDir>/libs/entities/$1"
+    }
   }
 }

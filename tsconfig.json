@@ -16,6 +16,12 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@lib/database": ["libs/database"],
+      "@lib/database/*": ["libs/database/*"],
+       "@lib/entities": ["libs/entities"],
+      "@lib/entities/*": ["libs/entities/*"],
+    }
   }
 }
