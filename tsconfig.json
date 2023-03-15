@@ -20,8 +20,12 @@
     "paths": {
       "@lib/database": ["libs/database"],
       "@lib/database/*": ["libs/database/*"],
-       "@lib/entities": ["libs/entities"],
+      "@lib/entities": ["libs/entities"],
       "@lib/entities/*": ["libs/entities/*"],
+      "@lib/decorators": ["libs/decorators"],
+      "@lib/decorators/*": ["libs/decorators/*"],
+      "@lib/utils": ["libs/utils"],
+      "@lib/utils/*": ["libs/utils/*"],
     }
   }
 }

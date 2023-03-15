@@ -21,22 +21,22 @@ export class UserEntity extends BaseEntityAPI {
   cpfCnpj: string
 
   @Column({ name: 'data_nascimento' })
-  dataNascimento: string
+  dataNascimento: Date
 
-  @Column()
-  endereco: string
+  @Column({ nullable: true })
+  endereco?: string
 
-  @Column()
-  complemento: string
+  @Column({ nullable: true })
+  complemento?: string
 
-  @Column()
-  bairro: string
+  @Column({ nullable: true })
+  bairro?: string
 
-  @Column()
-  numero: string
+  @Column({ nullable: true })
+  numero?: string
 
-  @Column()
-  cep: string
+  @Column({ nullable: true })
+  cep?: string
 
   @Column({ name: 'telefone_residencial', nullable: true })
   telefoneResidencial?: string
