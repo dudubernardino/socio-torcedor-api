@@ -26,6 +26,8 @@
       "@lib/decorators/*": ["libs/decorators/*"],
       "@lib/utils": ["libs/utils"],
       "@lib/utils/*": ["libs/utils/*"],
+      "@lib/jwt": ["libs/jwt"],
+      "@lib/jwt/*": ["libs/jwt/*"],
     }
   }
 }
