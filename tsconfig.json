@@ -28,6 +28,8 @@
       "@lib/utils/*": ["libs/utils/*"],
       "@lib/jwt": ["libs/jwt"],
       "@lib/jwt/*": ["libs/jwt/*"],
+      "@lib/enums": ["libs/enums"],
+      "@lib/enums/*": ["libs/enums/*"],
     }
   }
 }

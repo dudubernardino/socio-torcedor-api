@@ -1,16 +1,31 @@
 import { IsCpfCnpjValid, PasswordConfirmation } from '@lib/decorators'
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MinLength, Validate, ValidateIf } from 'class-validator'
+import { EnumRoles } from '@lib/enums'
+import { ApiProperty } from '@nestjs/swagger'
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+  Validate,
+  ValidateIf,
+} from 'class-validator'
 
 export class UserInputDto {
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   name: string
 
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   @IsEmail()
   email: string
 
+  @ApiProperty()
   @IsNotEmpty()
   @MinLength(8)
   @IsString()
@@ -20,12 +35,14 @@ export class UserInputDto {
   })
   password: string
 
+  @ApiProperty()
   @IsOptional()
   @ValidateIf((object, value) => value !== '')
   @IsNotEmpty()
   @Validate(PasswordConfirmation, ['password'])
   confirmPassword: string
 
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   @Matches(/^(?:\d{11}|\d{14})$/, {
@@ -34,10 +51,16 @@ export class UserInputDto {
   @Validate(IsCpfCnpjValid)
   cpfCnpj: string
 
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   @Matches(/^\d{4}-\d{2}-\d{2}$/, {
     message: 'birthday date must be on format yyyy-mm-dd.',
   })
   dataNascimento: string
+
+  @ApiProperty()
+  @IsEnum(EnumRoles)
+  @IsOptional()
+  role: EnumRoles
 }

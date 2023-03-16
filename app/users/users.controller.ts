@@ -1,6 +1,7 @@
 import { UserPayload } from '@lib/entities'
-import { Public } from '@lib/jwt'
-import { JwtAuthGuard } from '@lib/jwt/guards'
+import { EnumRoles } from '@lib/enums'
+import { Public, Roles } from '@lib/jwt'
+import { JwtAuthGuard, RolesGuard } from '@lib/jwt/guards'
 import { HttpExceptionFilter } from '@lib/utils'
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseFilters, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
@@ -10,7 +11,7 @@ import { UsersService } from './users.service'
 
 @Controller('users')
 @ApiTags('/users')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @UseFilters(HttpExceptionFilter)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -18,6 +19,14 @@ export class UsersController {
   @Public()
   @Post()
   async create(@Body() data: UserInputDto): Promise<UserPayload> {
+    const result = await this.usersService.create({ ...data, role: EnumRoles.USER })
+
+    return result
+  }
+
+  @Post('/custom')
+  @Roles(EnumRoles.SUPER_ADMIN, EnumRoles.ADMIN)
+  async createUserWithCustomRoles(@Body() data: UserInputDto): Promise<UserPayload> {
     const result = await this.usersService.create(data)
 
     return result

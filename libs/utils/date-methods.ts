@@ -1,5 +1,7 @@
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 
-export const formatDate = (date: Date): string => {
-  return format(date, 'dd/MM/yyyy')
+export const formatDate = (date: any): string => {
+  const parsedDate = parseISO(date)
+
+  return format(parsedDate, 'dd/MM/yyyy')
 }

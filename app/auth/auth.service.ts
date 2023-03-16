@@ -30,6 +30,7 @@ export class AuthService {
           name: true,
           email: true,
           password: true,
+          role: true,
         },
       }),
     )
@@ -58,7 +59,13 @@ export class AuthService {
   async login(authInput: AuthDto): Promise<AuthOutputDto> {
     const user = await this.basicCheck(authInput)
 
-    const accessToken = await this.signAccessToken(user)
+    const payload = {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+    }
+
+    const accessToken = await this.signAccessToken(payload)
 
     return { accessToken }
   }

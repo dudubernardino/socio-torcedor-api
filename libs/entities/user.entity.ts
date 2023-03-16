@@ -4,6 +4,7 @@ import { BaseEntityAPI } from './base.entity'
 import * as bcrypt from 'bcryptjs'
 import { formatDate, maskCpfCnpj, removeEmptyFields } from '@lib/utils'
 import { ApiProperty } from '@nestjs/swagger'
+import { EnumRoles } from '@lib/enums'
 
 export class UserPayload {
   constructor(init?: Partial<UserPayload>) {
@@ -75,6 +76,9 @@ export class UserEntity extends BaseEntityAPI {
 
   @Column({ name: 'telefone_celular', nullable: true })
   telefoneCelular?: string
+
+  @Column({ type: 'enum', enum: EnumRoles, nullable: false })
+  role: EnumRoles
 
   @BeforeInsert()
   async hashPassword() {

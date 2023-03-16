@@ -1,0 +1,10 @@
+{
+  "configurations": [
+    {
+      "command": "yarn start:dev",
+      "name": "Run Project",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+  ],
+}
