@@ -1,6 +1,6 @@
 import { UserEntity, UserPayload } from '@lib/entities'
 import { eres } from '@lib/utils'
-import { Injectable, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common'
+import { Injectable, InternalServerErrorException, Logger, UnprocessableEntityException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { UserInputDto } from './dtos/create-user.dto'
@@ -8,6 +8,8 @@ import { UpdateUserInputDto } from './dtos/update-user.dto'
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name)
+
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
@@ -31,7 +33,11 @@ export class UsersService {
 
     const [error, result] = await eres(newUser.save())
 
-    if (error) throw new InternalServerErrorException('Something went wrong when trying to create a new user.')
+    if (error) {
+      this.logger.error(`${UsersService.name}[createUser]`, error)
+
+      throw new InternalServerErrorException('Something went wrong when trying to create a new user.')
+    }
 
     return UserEntity.convertToPayload(result)
   }
@@ -42,8 +48,20 @@ export class UsersService {
     return users.map((user) => UserEntity.convertToPayload(user))
   }
 
-  async findOne(id: string): Promise<UserPayload> {
-    const user = await this.userRepository.findOne({ where: { id } })
+  private async findUserById(userId: string): Promise<UserEntity> {
+    const [error, user] = await eres(this.userRepository.findOne({ where: { id: userId } }))
+
+    if (error || !user) {
+      this.logger.error(`${UsersService.name}[findUserById - id: ${userId}]`, error)
+
+      throw new UnprocessableEntityException('User not found.')
+    }
+
+    return user
+  }
+
+  async findOne(userId: string): Promise<UserPayload> {
+    const user = await this.findUserById(userId)
 
     return UserEntity.convertToPayload(user)
   }
@@ -57,27 +75,23 @@ export class UsersService {
   async update(userId: string, data: UpdateUserInputDto): Promise<UserPayload> {
     await this.updateUserBasicCheck(data.email)
 
-    const user = await this.userRepository.findOne({ where: { id: userId } })
+    const user = await this.findUserById(userId)
 
     const updatedUser = this.userRepository.merge(user, data)
 
     const [error, result] = await eres(this.userRepository.save(updatedUser))
 
-    if (error) throw new InternalServerErrorException('Something went wrong when trying to update user.')
+    if (error) {
+      this.logger.error(`${UsersService.name}[updateUser - id: ${userId}]`, error)
+
+      throw new InternalServerErrorException('Something went wrong when trying to update user.')
+    }
 
     return UserEntity.convertToPayload(result)
   }
 
-  private async removeUserBasicCheck(userId: string): Promise<UserEntity> {
-    const user = await this.userRepository.findOne({ where: { id: userId } })
-
-    if (!user) throw new UnprocessableEntityException('User does not exists.')
-
-    return user
-  }
-
   async remove(userId: string): Promise<boolean> {
-    const user = await this.removeUserBasicCheck(userId)
+    const user = await this.findUserById(userId)
 
     const [error] = await eres(this.userRepository.remove(user))
 

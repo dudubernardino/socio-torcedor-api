@@ -1,4 +1,4 @@
-import { cpf as cpfValidator, cnpj as cnpjValidator } from 'cpf-cnpj-validator'
+import { cpf as cpfValidator } from 'cpf-cnpj-validator'
 
 export const maskData = (item: string) => {
   if (!item) return null
