@@ -1,4 +1,4 @@
-export enum GenderRoles {
+export enum EnumGender {
   MALE = 'MALE',
   FEMALE = 'ADMIN',
   NON_BINARY = 'NON_BINARY',

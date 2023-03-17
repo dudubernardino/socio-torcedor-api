@@ -4,7 +4,7 @@ import { BaseEntityAPI } from './base.entity'
 import * as bcrypt from 'bcryptjs'
 import { formatDate, maskCpfCnpj, removeEmptyFields } from '@lib/utils'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { EnumRoles, GenderRoles } from '@lib/enums'
+import { EnumRoles, EnumGender } from '@lib/enums'
 
 export class UserPayload {
   constructor(init?: Partial<UserPayload>) {
@@ -80,7 +80,7 @@ export class UserEntity extends BaseEntityAPI {
   @Column({ type: 'date' })
   birthday: Date
 
-  @Column({ type: 'enum', enum: GenderRoles, nullable: false })
+  @Column({ type: 'enum', enum: EnumGender, nullable: false })
   gender: string
 
   @Column({ type: 'enum', enum: EnumRoles, nullable: false })

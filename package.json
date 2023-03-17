@@ -88,7 +88,7 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "./coverage",
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
       "<rootDir>/dist/",
@@ -107,7 +107,8 @@
       "@lib/entities(|/.*)$": "<rootDir>/libs/entities/$1",
       "@lib/jwt(|/.*)$": "<rootDir>/libs/jwt/$1",
       "@lib/utils(|/.*)$": "<rootDir>/libs/utils/$1",
-      "@lib/decorators(|/.*)$": "<rootDir>/libs/decorators/$1"
+      "@lib/decorators(|/.*)$": "<rootDir>/libs/decorators/$1",
+      "@lib/enums(|/.*)$": "<rootDir>/libs/enums/$1"
     }
   }
 }

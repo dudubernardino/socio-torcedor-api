@@ -1,5 +1,5 @@
 import { IsTaxIdValid, PasswordConfirmation } from '@lib/decorators'
-import { EnumRoles, GenderRoles } from '@lib/enums'
+import { EnumRoles, EnumGender } from '@lib/enums'
 import { ApiProperty } from '@nestjs/swagger'
 import {
   IsEmail,
@@ -61,8 +61,8 @@ export class UserInputDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsEnum(GenderRoles)
-  gender: GenderRoles
+  @IsEnum(EnumGender)
+  gender: EnumGender
 
   @ApiProperty()
   @IsEnum(EnumRoles)
