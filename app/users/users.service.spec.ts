@@ -37,10 +37,10 @@ describe('UsersService', () => {
 
   describe('create', () => {
     const data: any = {
-      name: 'Eduardo Bernardino',
-      email: 'eduardo@org.com',
-      password: 'P@assword123',
-      confirmPassword: 'P@assword123',
+      name: 'John Doe',
+      email: 'email',
+      password: 'password',
+      confirmPassword: 'password',
       taxId: '69074164099',
       birthday: '2000-02-11',
       gender: EnumGender.MALE,

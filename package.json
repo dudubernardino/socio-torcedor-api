@@ -96,7 +96,8 @@
       "<rootDir>/libs/database/migrations",
       "<rootDir>/libs/database/seeds",
       "^.*\\.e2e-spec\\.[jt]sx?$",
-      ".*module.ts$"
+      ".*module.ts$",
+      ".*main.ts$"
     ],
     "roots": [
       "<rootDir>/app/",
