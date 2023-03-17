@@ -28,33 +28,33 @@ export class UpdateUserInputDto {
 
   @IsString()
   @IsOptional()
-  endereco?: string
+  address?: string
 
   @IsString()
   @IsOptional()
-  complemento?: string
+  complement?: string
 
   @IsString()
   @IsOptional()
-  bairro?: string
+  neighborhood?: string
 
   @IsString()
   @IsOptional()
-  numero?: string
+  number?: string
 
   @IsString()
   @IsOptional()
-  cep?: string
+  zipCode?: string
 
   @IsString()
   @IsOptional()
-  telefoneResidencial?: string
+  homePhone?: string
 
   @IsString()
   @IsOptional()
-  telefoneComercial?: string
+  workPhone?: string
 
   @IsString()
   @IsOptional()
-  telefoneCelular?: string
+  cellPhone?: string
 }

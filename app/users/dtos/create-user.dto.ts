@@ -1,5 +1,5 @@
-import { IsCpfCnpjValid, PasswordConfirmation } from '@lib/decorators'
-import { EnumRoles } from '@lib/enums'
+import { IsTaxIdValid, PasswordConfirmation } from '@lib/decorators'
+import { EnumRoles, GenderRoles } from '@lib/enums'
 import { ApiProperty } from '@nestjs/swagger'
 import {
   IsEmail,
@@ -48,8 +48,8 @@ export class UserInputDto {
   @Matches(/^(?:\d{11}|\d{14})$/, {
     message: 'cpf or cpnj is not valid.',
   })
-  @Validate(IsCpfCnpjValid)
-  cpfCnpj: string
+  @Validate(IsTaxIdValid)
+  taxId: string
 
   @ApiProperty()
   @IsString()
@@ -57,7 +57,12 @@ export class UserInputDto {
   @Matches(/^\d{4}-\d{2}-\d{2}$/, {
     message: 'birthday date must be on format yyyy-mm-dd.',
   })
-  dataNascimento: string
+  birthday: string
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsEnum(GenderRoles)
+  gender: GenderRoles
 
   @ApiProperty()
   @IsEnum(EnumRoles)

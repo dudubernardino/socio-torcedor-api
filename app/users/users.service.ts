@@ -15,17 +15,17 @@ export class UsersService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  private async findUserByEmailOrCpfCnpj(email: string, cpfCnpj?: string): Promise<UserEntity> {
+  private async findUserByEmailOrTaxId(email: string, taxId?: string): Promise<UserEntity> {
     return this.userRepository
       .createQueryBuilder('users')
       .where('users.email = :email', { email })
-      .orWhere('users.cpfCnpj = :cpfCnpj', { cpfCnpj })
+      .orWhere('users.taxId = :taxId', { taxId })
       .select('users.id')
       .getOne()
   }
 
   async create(data: UserInputDto): Promise<UserPayload> {
-    const user = await this.findUserByEmailOrCpfCnpj(data.email, data.cpfCnpj)
+    const user = await this.findUserByEmailOrTaxId(data.email, data.taxId)
 
     if (user) throw new UnprocessableEntityException('User already exists.')
 
@@ -67,7 +67,7 @@ export class UsersService {
   }
 
   private async updateUserBasicCheck(email: string) {
-    const userAlreadyExists = await this.findUserByEmailOrCpfCnpj(email)
+    const userAlreadyExists = await this.findUserByEmailOrTaxId(email)
 
     if (userAlreadyExists) throw new UnprocessableEntityException('User already exists.')
   }

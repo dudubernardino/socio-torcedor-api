@@ -3,8 +3,8 @@ import { BaseEntityAPI } from './base.entity'
 
 import * as bcrypt from 'bcryptjs'
 import { formatDate, maskCpfCnpj, removeEmptyFields } from '@lib/utils'
-import { ApiProperty } from '@nestjs/swagger'
-import { EnumRoles } from '@lib/enums'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { EnumRoles, GenderRoles } from '@lib/enums'
 
 export class UserPayload {
   constructor(init?: Partial<UserPayload>) {
@@ -21,10 +21,37 @@ export class UserPayload {
   email: string
 
   @ApiProperty()
-  cpfCnpj: string
+  taxId: string
 
   @ApiProperty()
-  dataNascimento: string
+  birthday: string
+
+  @ApiProperty()
+  gender: string
+
+  @ApiPropertyOptional()
+  address?: string
+
+  @ApiPropertyOptional()
+  complement?: string
+
+  @ApiPropertyOptional()
+  neighborhood?: string
+
+  @ApiPropertyOptional()
+  number?: string
+
+  @ApiPropertyOptional()
+  zipCode?: string
+
+  @ApiPropertyOptional()
+  homePhone?: string
+
+  @ApiPropertyOptional()
+  workPhone?: string
+
+  @ApiPropertyOptional()
+  cellPhone?: string
 
   @ApiProperty()
   createdAt: Date
@@ -47,38 +74,41 @@ export class UserEntity extends BaseEntityAPI {
   @Column()
   password: string
 
-  @Column({ name: 'cpfCnpj' })
-  cpfCnpj: string
+  @Column({ name: 'tax_id' })
+  taxId: string
 
-  @Column({ name: 'data_nascimento' })
-  dataNascimento: Date
+  @Column({ type: 'date' })
+  birthday: Date
 
-  @Column({ nullable: true })
-  endereco?: string
-
-  @Column({ nullable: true })
-  complemento?: string
-
-  @Column({ nullable: true })
-  bairro?: string
-
-  @Column({ nullable: true })
-  numero?: string
-
-  @Column({ nullable: true })
-  cep?: string
-
-  @Column({ name: 'telefone_residencial', nullable: true })
-  telefoneResidencial?: string
-
-  @Column({ name: 'telefone_comercial', nullable: true })
-  telefoneComercial?: string
-
-  @Column({ name: 'telefone_celular', nullable: true })
-  telefoneCelular?: string
+  @Column({ type: 'enum', enum: GenderRoles, nullable: false })
+  gender: string
 
   @Column({ type: 'enum', enum: EnumRoles, nullable: false })
   role: EnumRoles
+
+  @Column({ nullable: true })
+  address?: string
+
+  @Column({ nullable: true })
+  complement?: string
+
+  @Column({ nullable: true })
+  neighborhood?: string
+
+  @Column({ nullable: true })
+  number?: string
+
+  @Column({ name: 'zip_code', nullable: true })
+  zipCode?: string
+
+  @Column({ name: 'home_phone', nullable: true })
+  homePhone?: string
+
+  @Column({ name: 'work_phone', nullable: true })
+  workPhone?: string
+
+  @Column({ name: 'cell_phone', nullable: true })
+  cellPhone?: string
 
   @BeforeInsert()
   async hashPassword() {
@@ -96,8 +126,19 @@ export class UserEntity extends BaseEntityAPI {
         id: user.id,
         name: user.name,
         email: user.email,
-        cpfCnpj: maskCpfCnpj(user.cpfCnpj),
-        dataNascimento: formatDate(user.dataNascimento),
+        taxId: maskCpfCnpj(user.taxId),
+        birthday: formatDate(user.birthday),
+        gender: user.gender,
+        address: user.address,
+        complement: user.complement,
+        neighborhood: user.neighborhood,
+        number: user.number,
+        zipCode: user.zipCode,
+        homePhone: user.homePhone,
+        workPhone: user.workPhone,
+        cellPhone: user.cellPhone,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       }),
     )
   }

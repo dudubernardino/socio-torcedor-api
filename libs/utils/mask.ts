@@ -6,8 +6,8 @@ export const maskData = (item: string) => {
   return item.replace(/./g, '*')
 }
 
-export const maskCpfCnpj = (cpfCnpj: string) => {
-  if (!cpfCnpj) return null
+export const maskCpfCnpj = (taxId: string) => {
+  if (!taxId) return null
 
-  return cpfValidator.isValid(cpfCnpj) ? cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.***.***-$4') : cpfCnpj
+  return cpfValidator.isValid(taxId) ? taxId.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.***.***-$4') : taxId
 }
