@@ -3,9 +3,9 @@ import { Repository } from 'typeorm'
 import { UsersService } from './users.service'
 import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
-import { MockUserRepository, usersMock } from '@lib/utils'
 import { EnumGender } from '@lib/enums'
 import { InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common'
+import { MockUserRepository, usersMock } from '@lib/utils/mocks/user.repository'
 
 describe('UsersService', () => {
   let service: UsersService

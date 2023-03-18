@@ -1,4 +1,4 @@
-import { UserEntity } from '@lib/entities'
+import { ApplicationEntity, MembershipEntity, PlanEntity, TeamEntity, UserEntity } from '@lib/entities'
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -17,10 +17,11 @@ import { DatabaseLogger } from './database.logger'
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
-        entities: [UserEntity],
+        entities: [TeamEntity, UserEntity, PlanEntity, MembershipEntity, ApplicationEntity, MembershipEntity],
         autoLoadEntities: true,
         keepConnectionAlive: configService.get('POSTGRES_KEEP_CONNECTION_ALIVE') === 'true',
         logging: configService.get('POSTGRES_LOGGING') === 'true',
+        synchronize: configService.get('POSTGRES_KEEP_CONNECTION_ALIVE') === 'true',
       }),
     }),
   ],

@@ -68,4 +68,8 @@ export class UserInputDto {
   @IsEnum(EnumRoles)
   @IsOptional()
   role: EnumRoles
+
+  @ApiProperty()
+  @IsOptional()
+  teamId: string
 }

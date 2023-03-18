@@ -1,9 +1,9 @@
-import { UserPayload } from '@lib/entities'
+import { UserJwtPayload, UserPayload } from '@lib/entities'
 import { EnumRoles } from '@lib/enums'
-import { Public, Roles } from '@lib/jwt'
+import { Roles } from '@lib/jwt'
 import { JwtAuthGuard, RolesGuard } from '@lib/jwt/guards'
 import { HttpExceptionFilter } from '@lib/utils'
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseFilters, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseFilters, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { UserInputDto } from './dtos/create-user.dto'
 import { UpdateUserInputDto } from './dtos/update-user.dto'
@@ -16,46 +16,57 @@ import { UsersService } from './users.service'
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Public()
   @Post()
-  async create(@Body() data: UserInputDto): Promise<UserPayload> {
-    const result = await this.usersService.create({ ...data, role: EnumRoles.USER })
+  @Roles(EnumRoles.SUPER_ADMIN, EnumRoles.ADMIN)
+  async create(@Req() { user }: { user: UserJwtPayload }, @Body() data: UserInputDto): Promise<UserPayload> {
+    const result = await this.usersService.create({ ...data, role: EnumRoles.USER, teamId: user.teamId })
 
     return result
   }
 
   @Post('/custom')
   @Roles(EnumRoles.SUPER_ADMIN, EnumRoles.ADMIN)
-  async createUserWithCustomRoles(@Body() data: UserInputDto): Promise<UserPayload> {
-    const result = await this.usersService.create(data)
+  async createUserWithCustomRoles(
+    @Req() { user }: { user: UserJwtPayload },
+    @Body() data: UserInputDto,
+  ): Promise<UserPayload> {
+    const result = await this.usersService.create({ ...data, teamId: user.id })
 
     return result
   }
 
   @Get()
-  async findAll(): Promise<UserPayload[]> {
-    const result = await this.usersService.findAll()
+  @Roles(EnumRoles.SUPER_ADMIN, EnumRoles.ADMIN, EnumRoles.MANAGER)
+  async findAll(@Req() { user }: { user: UserJwtPayload }): Promise<UserPayload[]> {
+    const result = await this.usersService.findAll(user?.teamId)
 
     return result
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<UserPayload> {
-    const result = await this.usersService.findOne(id)
+  @Roles(EnumRoles.SUPER_ADMIN, EnumRoles.ADMIN, EnumRoles.MANAGER, EnumRoles.USER)
+  async findOne(@Req() { user }: { user: UserJwtPayload }, @Param('id') id: string): Promise<UserPayload> {
+    const result = await this.usersService.findOne(user.teamId, id)
 
     return result
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() data: UpdateUserInputDto): Promise<UserPayload> {
-    const result = await this.usersService.update(id, data)
+  @Roles(EnumRoles.SUPER_ADMIN, EnumRoles.ADMIN, EnumRoles.MANAGER, EnumRoles.USER)
+  async update(
+    @Req() { user }: { user: UserJwtPayload },
+    @Param('id') id: string,
+    @Body() data: UpdateUserInputDto,
+  ): Promise<UserPayload> {
+    const result = await this.usersService.update(user.teamId, id, data)
 
     return result
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<boolean> {
-    const result = await this.usersService.remove(id)
+  @Roles(EnumRoles.SUPER_ADMIN, EnumRoles.ADMIN, EnumRoles.MANAGER, EnumRoles.USER)
+  async remove(@Req() { user }: { user: UserJwtPayload }, @Param('id') id: string): Promise<boolean> {
+    const result = await this.usersService.remove(user.teamId, id)
 
     return result
   }

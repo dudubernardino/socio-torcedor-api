@@ -2,11 +2,16 @@ import { Logger, ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AppModule } from './app.module'
+import { UsersService } from './users/users.service'
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap')
 
   const app = await NestFactory.create(AppModule)
+
+  const usersService = app.get(UsersService)
+  // Verify First Super Admin User
+  usersService.createFirstUser()
 
   app.useGlobalPipes(new ValidationPipe())
 

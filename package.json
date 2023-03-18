@@ -109,7 +109,8 @@
       "@lib/jwt(|/.*)$": "<rootDir>/libs/jwt/$1",
       "@lib/utils(|/.*)$": "<rootDir>/libs/utils/$1",
       "@lib/decorators(|/.*)$": "<rootDir>/libs/decorators/$1",
-      "@lib/enums(|/.*)$": "<rootDir>/libs/enums/$1"
+      "@lib/enums(|/.*)$": "<rootDir>/libs/enums/$1",
+      "@lib/generate-password(|/.*)$": "<rootDir>/libs/generate-password/$1"
     }
   }
 }

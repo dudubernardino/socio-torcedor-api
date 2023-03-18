@@ -1,10 +1,12 @@
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { BaseEntityAPI } from './base.entity'
 
 import * as bcrypt from 'bcryptjs'
 import { formatDate, maskCpfCnpj, removeEmptyFields } from '@lib/utils'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { EnumRoles, EnumGender } from '@lib/enums'
+import { TeamEntity } from './team.entity'
+import { MembershipEntity } from './membership.entity'
 
 export class UserPayload {
   constructor(init?: Partial<UserPayload>) {
@@ -65,6 +67,9 @@ export class UserEntity extends BaseEntityAPI {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
+  @Column({ name: 'team_id', type: 'uuid', nullable: true })
+  teamId?: string
+
   @Column()
   name: string
 
@@ -77,11 +82,11 @@ export class UserEntity extends BaseEntityAPI {
   @Column({ name: 'tax_id' })
   taxId: string
 
-  @Column({ type: 'date' })
-  birthday: Date
+  @Column({ type: 'date', nullable: true })
+  birthday?: Date
 
-  @Column({ type: 'enum', enum: EnumGender, nullable: false })
-  gender: string
+  @Column({ type: 'enum', enum: EnumGender, nullable: true })
+  gender?: string
 
   @Column({ type: 'enum', enum: EnumRoles, nullable: false })
   role: EnumRoles
@@ -110,6 +115,13 @@ export class UserEntity extends BaseEntityAPI {
   @Column({ name: 'cell_phone', nullable: true })
   cellPhone?: string
 
+  @ManyToOne(() => TeamEntity, (team) => team.users)
+  @JoinColumn({ name: 'team_id' })
+  team?: TeamEntity
+
+  @OneToMany(() => MembershipEntity, (membership) => membership.user)
+  memberships: MembershipEntity[]
+
   @BeforeInsert()
   async hashPassword() {
     const salt = await bcrypt.genSalt()
@@ -127,7 +139,7 @@ export class UserEntity extends BaseEntityAPI {
         name: user.name,
         email: user.email,
         taxId: maskCpfCnpj(user.taxId),
-        birthday: formatDate(user.birthday),
+        birthday: formatDate(user?.birthday),
         gender: user.gender,
         address: user.address,
         complement: user.complement,
@@ -137,9 +149,27 @@ export class UserEntity extends BaseEntityAPI {
         homePhone: user.homePhone,
         workPhone: user.workPhone,
         cellPhone: user.cellPhone,
+        team: {
+          id: user?.team?.id,
+          name: user?.team?.name,
+        },
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       }),
     )
   }
+}
+
+export class UserJwtPayload {
+  constructor(init?: UserJwtPayload) {
+    this.id = init.id
+    this.name = init?.name
+    this.teamId = init?.teamId
+    this.role = init?.role
+  }
+
+  id: string
+  name?: string
+  teamId?: string
+  role: EnumRoles
 }

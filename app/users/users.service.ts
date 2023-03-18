@@ -1,6 +1,8 @@
 import { UserEntity, UserPayload } from '@lib/entities'
+import { EnumRoles } from '@lib/enums'
 import { eres } from '@lib/utils'
 import { Injectable, InternalServerErrorException, Logger, UnprocessableEntityException } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { UserInputDto } from './dtos/create-user.dto'
@@ -13,6 +15,7 @@ export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    private configService: ConfigService,
   ) {}
 
   private async findUserByEmailOrTaxId(email: string, taxId?: string): Promise<UserEntity> {
@@ -24,17 +27,48 @@ export class UsersService {
       .getOne()
   }
 
-  async create(data: UserInputDto): Promise<UserPayload> {
+  async createFirstUser(): Promise<boolean> {
+    const data = {
+      name: this.configService.get('SUPER_ADMIN_NAME'),
+      email: this.configService.get('SUPER_ADMIN_EMAIL'),
+      password: this.configService.get('SUPER_ADMIN_SECRET'),
+      confirmPassword: this.configService.get('SUPER_ADMIN_SECRET'),
+      taxId: this.configService.get('SUPER_ADMIN_TAX_ID'),
+      role: EnumRoles.SUPER_ADMIN,
+    }
+
     const user = await this.findUserByEmailOrTaxId(data.email, data.taxId)
 
-    if (user) throw new UnprocessableEntityException('User already exists.')
+    if (user) return true
+
+    const newUser = this.userRepository.create(data)
+
+    const [error] = await eres(newUser.save())
+
+    if (error) {
+      this.logger.error(`${UsersService.name}[create]`, error)
+
+      return false
+    }
+
+    this.logger.log(`${UsersService.name}[create]: Super Admin user it was created.`)
+
+    return true
+  }
+
+  async create(data: UserInputDto): Promise<UserPayload> {
+    this.logger.log(`${UsersService.name}[create]: User from TeamId: ${data.teamId}`)
+
+    const [findError, user] = await eres(this.findUserByEmailOrTaxId(data.email, data.taxId))
+
+    if (findError || user) throw new UnprocessableEntityException('User already exists.')
 
     const newUser = this.userRepository.create(data)
 
     const [error, result] = await eres(newUser.save())
 
     if (error) {
-      this.logger.error(`${UsersService.name}[createUser]`, error)
+      this.logger.error(`${UsersService.name}[create]`, error)
 
       throw new InternalServerErrorException('Something went wrong when trying to create a new user.')
     }
@@ -42,14 +76,35 @@ export class UsersService {
     return UserEntity.convertToPayload(result)
   }
 
-  async findAll(): Promise<UserPayload[]> {
-    const users = await this.userRepository.find()
+  async findAll(teamId: string): Promise<UserPayload[]> {
+    this.logger.log(`${UsersService.name}[findAll]: Users from TeamId: ${teamId}`)
+
+    const query = this.userRepository.createQueryBuilder('users').leftJoinAndSelect('users.team', 'team')
+
+    if (teamId) query.where('users.teamId = :teamId', { teamId })
+
+    const [error, users] = await eres(query.getMany())
+
+    if (error) {
+      this.logger.error(`${UsersService.name}[findAll - teamId: ${teamId}]`, error)
+
+      throw new UnprocessableEntityException('Users not found.')
+    }
 
     return users.map((user) => UserEntity.convertToPayload(user))
   }
 
-  private async findUserById(userId: string): Promise<UserEntity> {
-    const [error, user] = await eres(this.userRepository.findOne({ where: { id: userId } }))
+  private async findUserById(teamId: string, userId: string): Promise<UserEntity> {
+    this.logger.log(`${UsersService.name}[findUserById]: User from TeamId: ${teamId}`)
+
+    const query = this.userRepository
+      .createQueryBuilder('users')
+      .leftJoinAndSelect('users.team', 'team')
+      .where('users.id = :id', { id: userId })
+
+    if (teamId) query.andWhere('users.teamId = :teamId', { teamId })
+
+    const [error, user] = await eres(query.getOne())
 
     if (error || !user) {
       this.logger.error(`${UsersService.name}[findUserById - id: ${userId}]`, error)
@@ -60,8 +115,8 @@ export class UsersService {
     return user
   }
 
-  async findOne(userId: string): Promise<UserPayload> {
-    const user = await this.findUserById(userId)
+  async findOne(teamId: string, userId: string): Promise<UserPayload> {
+    const user = await this.findUserById(teamId, userId)
 
     return UserEntity.convertToPayload(user)
   }
@@ -72,10 +127,10 @@ export class UsersService {
     if (userAlreadyExists) throw new UnprocessableEntityException('User already exists.')
   }
 
-  async update(userId: string, data: UpdateUserInputDto): Promise<UserPayload> {
+  async update(teamId: string, userId: string, data: UpdateUserInputDto): Promise<UserPayload> {
     await this.updateUserBasicCheck(data.email)
 
-    const user = await this.findUserById(userId)
+    const user = await this.findUserById(teamId, userId)
 
     const updatedUser = this.userRepository.merge(user, data)
 
@@ -90,8 +145,8 @@ export class UsersService {
     return UserEntity.convertToPayload(result)
   }
 
-  async remove(userId: string): Promise<boolean> {
-    const user = await this.findUserById(userId)
+  async remove(teamId: string, userId: string): Promise<boolean> {
+    const user = await this.findUserById(teamId, userId)
 
     const [error] = await eres(this.userRepository.remove(user))
 

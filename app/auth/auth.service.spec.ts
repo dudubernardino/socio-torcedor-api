@@ -1,6 +1,6 @@
 import { UserEntity } from '@lib/entities'
 import { JWTService } from '@lib/jwt'
-import { MockUserRepository, usersMock } from '@lib/utils'
+import { MockUserRepository, usersMock } from '@lib/utils/mocks/user.repository'
 import { UnprocessableEntityException } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { getRepositoryToken } from '@nestjs/typeorm'
