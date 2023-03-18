@@ -7,6 +7,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { EnumRoles, EnumGender } from '@lib/enums'
 import { TeamEntity } from './team.entity'
 import { MembershipEntity } from './membership.entity'
+import { CheckinEntity } from './checkin.entity'
 
 export class UserPayload {
   constructor(init?: Partial<UserPayload>) {
@@ -121,6 +122,9 @@ export class UserEntity extends BaseEntityAPI {
 
   @OneToMany(() => MembershipEntity, (membership) => membership.user)
   memberships: MembershipEntity[]
+
+  @OneToMany(() => CheckinEntity, (checkin) => checkin.user)
+  checkins: CheckinEntity[]
 
   @BeforeInsert()
   async hashPassword() {
