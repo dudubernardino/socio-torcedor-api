@@ -58,7 +58,7 @@ export class ApplicationEntity extends BaseEntityAPI {
   @Column({ nullable: true })
   salt?: string
 
-  @ManyToOne(() => TeamEntity)
+  @ManyToOne(() => TeamEntity, (team) => team.applications)
   @JoinColumn({ name: 'team_id' })
   team: TeamEntity
 

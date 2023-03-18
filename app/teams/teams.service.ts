@@ -8,6 +8,8 @@ import { TeamInputDto } from './dtos/create-team.dto'
 
 import { v4 as uuidv4 } from 'uuid'
 import { generateSecret } from 'libs/generate-password'
+import { UpdateTeamInputDto } from './dtos/update-team.dto'
+import { EntityStatus } from '@lib/enums'
 
 @Injectable()
 export class TeamsService {
@@ -26,6 +28,7 @@ export class TeamsService {
       .where('teams.email = :email', { email })
       .orWhere('teams.taxId = :taxId', { taxId })
       .select('teams.id')
+      .withDeleted()
       .getOne()
   }
 
@@ -48,19 +51,82 @@ export class TeamsService {
   }
 
   async findAll(): Promise<TeamPayload[]> {
-    const teams = await this.teamsRepository.find()
+    const [error, teams] = await eres(this.teamsRepository.find({ withDeleted: true }))
+
+    if (error) {
+      this.logger.error(`${TeamsService.name}[findAll]`, error)
+
+      throw new InternalServerErrorException('Something went wrong when trying to get all teams.')
+    }
 
     return teams.map((team) => TeamEntity.convertToPayload(team))
   }
 
-  async findTeamById(id: string): Promise<TeamPayload> {
-    const [error, team] = await eres(this.teamsRepository.findOne({ where: { id } }))
+  async findTeamById(id: string): Promise<TeamEntity> {
+    const [error, team] = await eres(this.teamsRepository.findOne({ where: { id }, withDeleted: true }))
 
     if (error || !team) {
       this.logger.error(`${TeamsService.name}[findTeamById - id: ${id}]`, error)
 
       throw new UnprocessableEntityException('Team not found.')
     }
+
+    return team
+  }
+
+  async findOne(id: string): Promise<TeamPayload> {
+    const team = await this.findTeamById(id)
+
+    return TeamEntity.convertToPayload(team)
+  }
+
+  private async updateTeamBasicCheck(id: string) {
+    const teamAlreadyExists = await this.findTeamByEmailOrTaxId(id)
+
+    if (teamAlreadyExists) throw new UnprocessableEntityException('Team already exists.')
+  }
+
+  async update(teamId: string, data: UpdateTeamInputDto): Promise<TeamPayload> {
+    await this.updateTeamBasicCheck(teamId)
+
+    const team = await this.findTeamById(teamId)
+
+    const updatedTeam = this.teamsRepository.merge(team, data)
+
+    const [error, result] = await eres(this.teamsRepository.save(updatedTeam))
+
+    if (error) {
+      this.logger.error(`${TeamsService.name}[update - id: ${teamId}]`, error)
+
+      throw new InternalServerErrorException('Something went wrong when trying to update team.')
+    }
+
+    return TeamEntity.convertToPayload(result)
+  }
+
+  async enable(teamId: string): Promise<TeamPayload> {
+    const team = await this.findTeamById(teamId)
+
+    team.status = EntityStatus.Active
+    team.updatedAt = new Date()
+    team.deletedAt = null
+
+    const [error] = await eres(team.save())
+
+    if (error) throw new InternalServerErrorException('Something went wrong when trying to enable team.')
+
+    return TeamEntity.convertToPayload(team)
+  }
+
+  async disable(teamId: string): Promise<TeamPayload> {
+    const team = await this.findTeamById(teamId)
+
+    team.status = EntityStatus.Inactive
+    team.deletedAt = new Date()
+
+    const [error] = await eres(team.save())
+
+    if (error) throw new InternalServerErrorException('Something went wrong when trying to disable team.')
 
     return TeamEntity.convertToPayload(team)
   }

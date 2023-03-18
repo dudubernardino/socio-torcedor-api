@@ -1,5 +1,5 @@
 import { ApplicationEntity, UserEntity } from '@lib/entities'
-import { EnumRoles } from '@lib/enums'
+import { EntityStatus, EnumRoles } from '@lib/enums'
 import { JWTService } from '@lib/jwt'
 import { eres, removeEmptyFields } from '@lib/utils'
 import { Injectable, Logger, UnprocessableEntityException } from '@nestjs/common'
@@ -80,6 +80,8 @@ export class AuthService {
     const [error, application] = await eres(
       this.applicationRepository.findOne({
         where: { ...filter },
+        relations: ['team'],
+        withDeleted: true,
         select: {
           id: true,
           name: true,
@@ -87,11 +89,18 @@ export class AuthService {
           secret: true,
           description: true,
           teamId: true,
+          team: {
+            id: true,
+            status: true,
+          },
         },
       }),
     )
 
-    if (error || !application) throw new UnprocessableEntityException('Team not found or secret is not valid.')
+    const isInactive = application?.team?.status === EntityStatus.Inactive
+
+    if (isInactive || error || !application)
+      throw new UnprocessableEntityException('Application not found or secret is not valid.')
 
     return application
   }

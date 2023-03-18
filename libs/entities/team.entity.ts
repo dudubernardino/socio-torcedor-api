@@ -1,6 +1,8 @@
+import { EntityStatus } from '@lib/enums'
 import { maskCpfCnpj, removeEmptyFields } from '@lib/utils'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { ApplicationEntity } from './applications.entity'
 import { BaseEntityAPI } from './base.entity'
 import { UserEntity } from './user.entity'
 
@@ -20,6 +22,9 @@ export class TeamPayload {
 
   @ApiProperty()
   email: string
+
+  @ApiProperty()
+  status: string
 
   @ApiPropertyOptional()
   mainColor?: string
@@ -41,6 +46,9 @@ export class TeamPayload {
 
   @ApiProperty({ required: false })
   updatedAt?: Date
+
+  @ApiProperty({ required: false })
+  deletedAt?: Date
 }
 
 @Entity({ name: 'teams' })
@@ -51,13 +59,16 @@ export class TeamEntity extends BaseEntityAPI {
   @Column()
   name: string
 
-  @Column({ nullable: true })
+  @Column({ name: 'trade_name', nullable: true })
   tradeName?: string
 
   @Column({ unique: true })
   email: string
 
-  @Column({ nullable: true })
+  @Column({ enum: EntityStatus, default: EntityStatus.Active })
+  status: string
+
+  @Column({ name: 'main_color', nullable: true })
   mainColor?: string
 
   @Column({ nullable: true })
@@ -75,6 +86,9 @@ export class TeamEntity extends BaseEntityAPI {
   @OneToMany(() => UserEntity, (user) => user.team)
   users: UserEntity[]
 
+  @OneToMany(() => ApplicationEntity, (applications) => applications.team)
+  applications: ApplicationEntity[]
+
   static convertToPayload = (team: TeamEntity): TeamPayload => {
     return new TeamPayload(
       removeEmptyFields({
@@ -82,6 +96,7 @@ export class TeamEntity extends BaseEntityAPI {
         name: team.name,
         tradeName: team.tradeName,
         email: team.email,
+        status: team.status,
         taxId: maskCpfCnpj(team.taxId),
         mainColor: team.mainColor,
         avatar: team.avatar,
@@ -89,6 +104,7 @@ export class TeamEntity extends BaseEntityAPI {
         description: team.description,
         createdAt: team.createdAt,
         updatedAt: team.updatedAt,
+        deletedAt: team.deletedAt,
       }),
     )
   }
