@@ -31,6 +31,7 @@ export class AuthService {
         where: { ...filter },
         select: {
           id: true,
+          teamId: true,
           name: true,
           email: true,
           password: true,
@@ -65,6 +66,7 @@ export class AuthService {
 
     const payload = {
       id: user.id,
+      teamId: user.teamId,
       name: user.name,
       role: user.role,
     }

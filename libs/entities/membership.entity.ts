@@ -1,9 +1,57 @@
 import { EnumMembershipStatus, EnumPaymentMethods } from '@lib/enums'
+import { removeEmptyFields } from '@lib/utils'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { BaseEntityAPI } from './base.entity'
 import { PlanEntity } from './plan.entity'
 import { TeamEntity } from './team.entity'
 import { UserEntity } from './user.entity'
+
+interface Team {
+  id: string
+  name: string
+}
+
+interface Plan {
+  id: string
+  name: string
+  value: number
+}
+
+interface User {
+  id: string
+  name: string
+}
+
+export class MembershipPayload {
+  constructor(init?: Partial<MembershipPayload>) {
+    Object.assign(this, init)
+  }
+
+  @ApiProperty()
+  id: string
+
+  @ApiProperty()
+  team: Team
+
+  @ApiProperty()
+  plan: Plan
+
+  @ApiProperty()
+  user: User
+
+  @ApiProperty()
+  registrationDate: Date
+
+  @ApiProperty()
+  dueDate: Date
+
+  @ApiPropertyOptional()
+  createdAt?: Date
+
+  @ApiPropertyOptional()
+  updatedAt?: Date
+}
 
 @Entity({ name: 'membership' })
 export class MembershipEntity extends BaseEntityAPI {
@@ -23,7 +71,7 @@ export class MembershipEntity extends BaseEntityAPI {
   status: EnumMembershipStatus
 
   @Column({ name: 'payment_method', type: 'enum', enum: EnumPaymentMethods })
-  paymentMethods: EnumMembershipStatus
+  paymentMethods: EnumPaymentMethods
 
   @Column({
     name: 'registration_date',
@@ -49,4 +97,29 @@ export class MembershipEntity extends BaseEntityAPI {
   @ManyToOne(() => TeamEntity)
   @JoinColumn({ name: 'team_id' })
   team: TeamEntity
+
+  static convertToPayload = (membership: MembershipEntity): MembershipPayload => {
+    return new MembershipPayload(
+      removeEmptyFields({
+        id: membership.id,
+        team: {
+          id: membership?.team?.id,
+          name: membership?.team?.name,
+        },
+        plan: {
+          id: membership?.plan?.id,
+          name: membership?.plan?.name,
+          value: membership?.plan?.price,
+        },
+        user: {
+          id: membership?.user.id,
+          name: membership?.user.name,
+        },
+        registrationDate: membership.registrationDate,
+        dueDate: membership.dueDate,
+        createdAt: membership.createdAt,
+        updatedAt: membership.updatedAt,
+      }),
+    )
+  }
 }

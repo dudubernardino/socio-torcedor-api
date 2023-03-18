@@ -1,10 +1,11 @@
-import { UserJwtPayload } from '@lib/entities'
+import { MembershipPayload, UserJwtPayload } from '@lib/entities'
 import { EnumRoles } from '@lib/enums'
 import { Roles } from '@lib/jwt'
 import { JwtAuthGuard, RolesGuard } from '@lib/jwt/guards'
 import { HttpExceptionFilter } from '@lib/utils'
-import { Controller, Get, Req, UseFilters, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Post, Req, UseFilters, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
+import { CreateMembershipDto } from './dtos/create-membership.dto'
 import { MembershipService } from './membership.service'
 
 @Controller('membership')
@@ -14,8 +15,22 @@ import { MembershipService } from './membership.service'
 export class MembershipController {
   constructor(private readonly membershipService: MembershipService) {}
 
+  @Post()
+  @Roles(EnumRoles.USER)
+  async create(
+    @Req() { user }: { user: UserJwtPayload },
+    @Body() data: CreateMembershipDto,
+  ): Promise<MembershipPayload> {
+    data.teamId = user.teamId
+    data.userId = user.id
+
+    const result = await this.membershipService.create(data)
+
+    return result
+  }
+
   @Get()
-  @Roles(EnumRoles.ADMIN)
+  @Roles(EnumRoles.ADMIN, EnumRoles.USER, EnumRoles.MANAGER)
   async findAll(@Req() { user }: { user: UserJwtPayload }): Promise<any> {
     const result = await this.membershipService.activeMembershipCount(user?.teamId)
 

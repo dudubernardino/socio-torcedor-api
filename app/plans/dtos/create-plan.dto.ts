@@ -1,11 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class PlanInputDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   name: string
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  description?: string
 
   @ApiProperty()
   @IsNumber()
