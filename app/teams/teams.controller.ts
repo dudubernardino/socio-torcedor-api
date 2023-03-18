@@ -3,10 +3,11 @@ import { EnumRoles } from '@lib/enums'
 import { Roles } from '@lib/jwt'
 import { JwtAuthGuard, RolesGuard } from '@lib/jwt/guards'
 import { HttpExceptionFilter } from '@lib/utils'
-import { Body, Controller, Get, Param, Patch, Post, UseFilters, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Post, Query, UseFilters, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { TeamAppInputDto } from './dtos/create-team-app.dto'
 import { TeamInputDto } from './dtos/create-team.dto'
+import { FilterTeamDto } from './dtos/filter-team-dto'
 import { UpdateTeamInputDto } from './dtos/update-team.dto'
 import { TeamsService } from './teams.service'
 
@@ -27,8 +28,8 @@ export class TeamsController {
 
   @Get()
   @Roles(EnumRoles.SUPER_ADMIN)
-  async findAll(): Promise<TeamPayload[]> {
-    const result = await this.teamsService.findAll()
+  async findAll(@Query() filter: FilterTeamDto): Promise<TeamPayload[]> {
+    const result = await this.teamsService.findAll(filter)
 
     return result
   }

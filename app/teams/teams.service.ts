@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { generateSecret } from 'libs/generate-password'
 import { UpdateTeamInputDto } from './dtos/update-team.dto'
 import { EntityStatus } from '@lib/enums'
+import { FilterTeamDto } from './dtos/filter-team-dto'
 
 @Injectable()
 export class TeamsService {
@@ -50,8 +51,35 @@ export class TeamsService {
     return TeamEntity.convertToPayload(result)
   }
 
-  async findAll(): Promise<TeamPayload[]> {
-    const [error, teams] = await eres(this.teamsRepository.find({ withDeleted: true }))
+  async findAll(filter: FilterTeamDto): Promise<TeamPayload[]> {
+    const query = this.teamsRepository.createQueryBuilder('teams').withDeleted()
+
+    if (filter.name)
+      query.where('teams.name ilike :name', {
+        name: `%${filter.name}%`,
+      })
+
+    if (filter.tradeName)
+      query.where('teams.tradeName ilike :tradeName', {
+        tradeName: `%${filter.tradeName}%`,
+      })
+
+    if (filter.taxId)
+      query.where('teams.taxId ilike :taxId', {
+        taxId: `%${filter.taxId}%`,
+      })
+
+    if (filter.email)
+      query.where('teams.email ilike :email', {
+        email: `%${filter.email}%`,
+      })
+
+    if (filter.status)
+      query.where('teams.status = :status', {
+        status: filter.status,
+      })
+
+    const [error, teams] = await eres(query.getMany())
 
     if (error) {
       this.logger.error(`${TeamsService.name}[findAll]`, error)
