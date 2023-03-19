@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { CreateMembershipDto } from './dtos/create-membership.dto'
 import { FilterMembershipDto } from './dtos/filter-membership.dto'
+import { FilterMembershipOutputDto } from './dtos/find-membership.output.dto'
 
 @Injectable()
 export class MembershipService {
@@ -30,7 +31,7 @@ export class MembershipService {
     }
   }
 
-  async findMembershipById(data: FilterMembershipDto): Promise<MembershipPayload> {
+  async findMembershipById(data: FilterMembershipDto): Promise<MembershipEntity> {
     const [error, membership] = await eres(
       this.membershipRepository.findOne({
         where: { teamId: data.teamId, userId: data.userId, id: data.membershipId },
@@ -44,7 +45,7 @@ export class MembershipService {
       throw new UnprocessableEntityException('Membership not found.')
     }
 
-    return MembershipEntity.convertToPayload(membership)
+    return membership
   }
 
   async create(data: CreateMembershipDto): Promise<MembershipPayload> {
@@ -71,10 +72,29 @@ export class MembershipService {
       membershipId: result.id,
     })
 
-    return membership
+    return MembershipEntity.convertToPayload(membership)
   }
 
-  async activeMembershipCount(teamId: string) {
+  async findAll(): Promise<FilterMembershipOutputDto[]> {
+    const query = this.membershipRepository
+      .createQueryBuilder('membership')
+      .innerJoin('membership.team', 'team')
+      .andWhere('membership.status = :status', { status: EnumMembershipStatus.ACTIVE })
+      .select('team.id as id, team.name as name, COUNT(membership.id) as memberships')
+      .groupBy('team.id')
+
+    const [error, memberships] = await eres(query.getRawMany())
+
+    if (error) {
+      this.logger.error(`${MembershipService.name}[findAll]`, error)
+
+      throw new UnprocessableEntityException('Something went wrong while trying to get all membership.')
+    }
+
+    return memberships
+  }
+
+  async activeMembershipCount(teamId: string): Promise<{ memberships: string }> {
     const query = this.membershipRepository
       .createQueryBuilder('membership')
       .where('membership.teamId = :teamId', { teamId })

@@ -3,9 +3,10 @@ import { EnumRoles } from '@lib/enums'
 import { Roles } from '@lib/jwt'
 import { JwtAuthGuard, RolesGuard } from '@lib/jwt/guards'
 import { HttpExceptionFilter } from '@lib/utils'
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseFilters, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseFilters, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { UserInputDto } from './dtos/create-user.dto'
+import { FilterUserDto } from './dtos/filter-user.dto'
 import { UpdateUserInputDto } from './dtos/update-user.dto'
 import { UsersService } from './users.service'
 
@@ -37,8 +38,8 @@ export class UsersController {
 
   @Get()
   @Roles(EnumRoles.SUPER_ADMIN, EnumRoles.ADMIN, EnumRoles.MANAGER)
-  async findAll(@Req() { user }: { user: UserJwtPayload }): Promise<UserPayload[]> {
-    const result = await this.usersService.findAll(user?.teamId)
+  async findAll(@Req() { user }: { user: UserJwtPayload }, @Query() filter: FilterUserDto): Promise<UserPayload[]> {
+    const result = await this.usersService.findAll(user?.teamId, filter)
 
     return result
   }

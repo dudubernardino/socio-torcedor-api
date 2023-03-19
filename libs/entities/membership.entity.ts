@@ -112,8 +112,8 @@ export class MembershipEntity extends BaseEntityAPI {
           value: membership?.plan?.price,
         },
         user: {
-          id: membership?.user.id,
-          name: membership?.user.name,
+          id: membership?.user?.id,
+          name: membership?.user?.name,
         },
         registrationDate: membership.registrationDate,
         dueDate: membership.dueDate,

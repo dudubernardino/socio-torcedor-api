@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { UserInputDto } from './dtos/create-user.dto'
+import { FilterUserDto } from './dtos/filter-user.dto'
 import { UpdateUserInputDto } from './dtos/update-user.dto'
 
 @Injectable()
@@ -76,12 +77,27 @@ export class UsersService {
     return UserEntity.convertToPayload(result)
   }
 
-  async findAll(teamId: string): Promise<UserPayload[]> {
+  async findAll(teamId: string, filter: FilterUserDto): Promise<UserPayload[]> {
     this.logger.log(`${UsersService.name}[findAll]: Users from TeamId: ${teamId}`)
 
     const query = this.userRepository.createQueryBuilder('users').leftJoinAndSelect('users.team', 'team')
 
     if (teamId) query.where('users.teamId = :teamId', { teamId })
+
+    if (filter.name)
+      query.andWhere('users.name ilike :name', {
+        name: `%${filter.name}%`,
+      })
+
+    if (filter.email)
+      query.andWhere('users.email ilike :email', {
+        email: `%${filter.email}%`,
+      })
+
+    if (filter.taxId)
+      query.andWhere('users.taxId ilike :taxId', {
+        taxId: `%${filter.taxId}%`,
+      })
 
     const [error, users] = await eres(query.getMany())
 
