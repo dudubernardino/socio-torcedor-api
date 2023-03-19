@@ -1,8 +1,48 @@
+import { removeEmptyFields } from '@lib/utils'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { BaseEntityAPI } from './base.entity'
 import { CheckinEntity } from './checkin.entity'
 import { StadiumEntity } from './stadium.entity'
 import { TeamEntity } from './team.entity'
+
+class Stadium {
+  @ApiProperty()
+  name: string
+}
+
+export class MatchPayload {
+  constructor(init?: Partial<MatchPayload>) {
+    Object.assign(this, init)
+  }
+
+  @ApiProperty()
+  id: string
+
+  @ApiProperty()
+  stadium: Stadium
+
+  @ApiProperty()
+  homeTeam: string
+
+  @ApiPropertyOptional()
+  homeTeamScore: number
+
+  @ApiProperty()
+  awayTeam: string
+
+  @ApiPropertyOptional()
+  awayTeamScore: number
+
+  @ApiProperty()
+  startTime: Date
+
+  @ApiProperty()
+  createdAt: Date
+
+  @ApiPropertyOptional()
+  updatedAt?: Date
+}
 
 @Entity({ name: 'matches' })
 export class MatchEntity extends BaseEntityAPI {
@@ -40,4 +80,22 @@ export class MatchEntity extends BaseEntityAPI {
 
   @OneToMany(() => CheckinEntity, (checkin) => checkin.match)
   checkins: CheckinEntity[]
+
+  static convertToPayload = (match: MatchEntity): MatchPayload => {
+    return new MatchPayload(
+      removeEmptyFields({
+        id: match.id,
+        homeTeam: match.homeTeam,
+        homeTeamScore: match.homeTeamScore,
+        awayTeam: match.awayTeam,
+        awayTeamScore: match.awayTeamScore,
+        startTime: match.startTime,
+        stadium: {
+          name: match?.stadium?.name,
+        },
+        createdAt: match.createdAt,
+        updatedAt: match.updatedAt,
+      }),
+    )
+  }
 }
