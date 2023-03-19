@@ -1,10 +1,11 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { BaseEntityAPI } from './base.entity'
 import { MatchEntity } from './match.entity'
 import { StadiumSectorEntity } from './stadium-sector.entity'
 import { UserEntity } from './user.entity'
 
 @Entity({ name: 'checkins' })
-export class CheckinEntity {
+export class CheckinEntity extends BaseEntityAPI {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
