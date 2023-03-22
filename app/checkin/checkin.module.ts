@@ -1,5 +1,5 @@
 import { DatabaseModule } from '@lib/database'
-import { CheckinEntity, MatchEntity, UserEntity } from '@lib/entities'
+import { CheckinEntity, MatchEntity, MembershipEntity } from '@lib/entities'
 import { JWTModule, JwtStrategy } from '@lib/jwt'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
@@ -12,7 +12,7 @@ import { CheckinsService } from './checkin.service'
     ConfigModule.forRoot(),
     DatabaseModule,
     JWTModule,
-    TypeOrmModule.forFeature([CheckinEntity, MatchEntity, UserEntity]),
+    TypeOrmModule.forFeature([CheckinEntity, MatchEntity, MembershipEntity]),
   ],
   controllers: [CheckinController],
   providers: [CheckinsService, JwtStrategy],

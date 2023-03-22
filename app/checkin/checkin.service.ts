@@ -1,6 +1,6 @@
-import { CheckinEntity, MatchEntity, UserEntity } from '@lib/entities'
+import { CheckinEntity, MatchEntity, MembershipEntity, UserJwtPayload } from '@lib/entities'
 import { eres } from '@lib/utils'
-import { Injectable, Logger, UnprocessableEntityException } from '@nestjs/common'
+import { Injectable, InternalServerErrorException, Logger, UnprocessableEntityException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { CreateCheckinDto } from './dtos/create-checkin.dto'
@@ -14,57 +14,128 @@ export class CheckinsService {
     private readonly checkinsRepository: Repository<CheckinEntity>,
     @InjectRepository(MatchEntity)
     private readonly matchesRepository: Repository<MatchEntity>,
-    @InjectRepository(UserEntity)
-    private readonly usersRepository: Repository<UserEntity>,
+    @InjectRepository(MembershipEntity)
+    private readonly membershipsRepository: Repository<MembershipEntity>,
   ) {}
 
-  private async checkinValidations(teamId: string, data: CreateCheckinDto) {
+  private async getCheckin(user: UserJwtPayload, matchId: string): Promise<CheckinEntity> {
     const [error, checkin] = await eres(
       this.checkinsRepository.findOne({
         where: {
-          userId: data.userId,
+          userId: user.id,
+          matchId,
+        },
+      }),
+    )
+
+    if (error || !checkin) {
+      this.logger.error(`${CheckinsService.name}[getCheckin - teamId: ${user.teamId}]`, error)
+      throw new UnprocessableEntityException('Something went wrong, verify your checkin.')
+    }
+
+    return checkin
+  }
+
+  private async getMatch(user: UserJwtPayload, matchId: string): Promise<MatchEntity> {
+    const [error, match] = await eres(
+      this.matchesRepository.findOne({
+        where: {
+          id: matchId,
+          teamId: user.teamId,
+        },
+      }),
+    )
+
+    if (error || !match) {
+      this.logger.error(`${CheckinsService.name}[getMatch - teamId: ${user.teamId}]`, error)
+      throw new UnprocessableEntityException('Something went wrong, we are looking into it.')
+    }
+
+    return match
+  }
+
+  private async checkinValidations(user: UserJwtPayload, data: CreateCheckinDto): Promise<void> {
+    const [error, checkin] = await eres(
+      this.checkinsRepository.findOne({
+        where: {
+          userId: user.id,
           matchId: data.matchId,
         },
       }),
     )
 
     if (error || checkin) {
-      this.logger.error(`${CheckinsService.name}[checkinBasicCheck - teamId: ${teamId}]`, error)
+      this.logger.error(`${CheckinsService.name}[checkinValidations - teamId: ${user.teamId}]`, error)
       throw new UnprocessableEntityException('Something went wrong, verify your checkin.')
     }
 
-    const [errorMatch, match] = await eres(
-      this.matchesRepository.findOne({
-        where: {
-          id: data.matchId,
-          teamId,
-        },
-      }),
-    )
+    await this.getMatch(user, data.matchId)
+  }
 
-    if (errorMatch || !match) {
-      this.logger.error(`${CheckinsService.name}[checkinBasicCheck - teamId: ${teamId}]`, error)
-      throw new UnprocessableEntityException('Something went wrong, we are looking into it.')
+  private async membershipValidations(userData: UserJwtPayload, sectorId: string): Promise<void> {
+    const query = this.membershipsRepository
+      .createQueryBuilder('memberships')
+      .innerJoinAndSelect('memberships.plan', 'plan')
+      .innerJoinAndSelect('plan.sectors', 'sectors')
+      .where('memberships.userId = :userId', { userId: userData.id })
+      .andWhere('sectors.id IN (:...ids)', { ids: [sectorId] })
+      .select(['memberships.id', 'memberships.userId', 'plan.id', 'sectors.id'])
+
+    const [error, membership] = await eres(query.getOne())
+
+    if (error || !membership) {
+      this.logger.error(`${CheckinsService.name}[membershipValidations - teamId: ${userData.teamId}]`, error)
+      throw new UnprocessableEntityException('You do not have permission for this sector.')
     }
   }
 
-  private async userValidations(userId: string) {
-    const query = this.usersRepository
-      .createQueryBuilder('users')
-      .leftJoinAndSelect('users.memberships', 'memberships')
-      .innerJoinAndSelect('memberships.plan', 'plan')
-      .innerJoinAndSelect('plan.sectors', 'sectors')
-      .where('users.id = :userId', { userId })
+  async create(user: UserJwtPayload, data: CreateCheckinDto) {
+    await this.checkinValidations(user, data)
+
+    await this.membershipValidations(user, data.sectorId)
+
+    const newCheckin = this.checkinsRepository.create({ ...data, userId: user.id, checkinTime: new Date() })
+
+    const [error, checkin] = await eres(newCheckin.save())
+
+    if (error) {
+      this.logger.error(`${CheckinsService.name}[create - teamId: ${user.teamId}]`, error)
+      throw new UnprocessableEntityException('Something went wrong when trying to create a checkin.')
+    }
+
+    return CheckinEntity.convertToPayload(checkin)
   }
 
-  async checkinBasicCheck(teamId: string, data: CreateCheckinDto) {
-    await this.checkinValidations(teamId, data)
+  async findAll(matchId: string) {
+    const query = this.checkinsRepository
+      .createQueryBuilder('checkins')
+      .leftJoinAndSelect('checkins.user', 'user')
+      .leftJoinAndSelect('checkins.match', 'match')
+      .leftJoinAndSelect('checkins.sector', 'sector')
+      .where('checkins.matchId = :matchId', { matchId })
 
-    await this.userValidations(data.userId)
+    const [error, checkins] = await eres(query.getMany())
+
+    if (error) {
+      this.logger.error(`${CheckinsService.name}[findAll - matchId: ${matchId}]`, error)
+      throw new UnprocessableEntityException('Something went wrong when trying to find all checkins.')
+    }
+
+    return checkins?.map((checkin) => CheckinEntity.convertToPayload(checkin))
   }
 
-  async create(teamId: string, data: CreateCheckinDto) {
-    await this.checkinBasicCheck(teamId, data)
+  async findOne(user: UserJwtPayload, matchId: string) {
+    const checkin = await this.getCheckin(user, matchId)
+
+    return CheckinEntity.convertToPayload(checkin)
+  }
+
+  async cancel(user: UserJwtPayload, matchId: string): Promise<boolean> {
+    const checkin = await this.getCheckin(user, matchId)
+
+    const [error] = await eres(this.checkinsRepository.remove(checkin))
+
+    if (error) throw new InternalServerErrorException('Something went wrong when trying to canel checkin.')
 
     return true
   }
