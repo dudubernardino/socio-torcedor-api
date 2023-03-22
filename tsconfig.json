@@ -30,6 +30,10 @@
       "@lib/jwt/*": ["libs/jwt/*"],
       "@lib/enums": ["libs/enums"],
       "@lib/enums/*": ["libs/enums/*"],
+      "@lib/generate-password": ["libs/generate-password"],
+      "@lib/generate-password/*": ["libs/generate-password/*"],
+      "@lib/mercado-pago": ["libs/mercado-pago"],
+      "@lib/mercado-pago/*": ["libs/mercado-pago/*"],
     }
   }
 }

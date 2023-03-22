@@ -16,4 +16,8 @@ export class UpdatePlanDto {
   @IsNumber()
   @IsOptional()
   price?: number
+
+  @ApiProperty({ isArray: true })
+  @IsOptional()
+  sectors?: any[]
 }

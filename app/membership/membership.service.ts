@@ -1,8 +1,11 @@
 import { MembershipEntity, MembershipPayload } from '@lib/entities'
-import { EnumMembershipStatus, EnumPaymentMethods } from '@lib/enums'
+import { EnumMembershipStatus } from '@lib/enums'
+import { MercadoPagoService } from '@lib/mercado-pago/mercado-pago.service'
 import { addOneYear, eres } from '@lib/utils'
-import { Injectable, Logger, UnprocessableEntityException } from '@nestjs/common'
+import { Inject, Injectable, Logger, UnprocessableEntityException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import { PlansService } from 'app/plans/plans.service'
+import { match } from 'ts-pattern'
 import { Repository } from 'typeorm'
 import { CreateMembershipDto } from './dtos/create-membership.dto'
 import { FilterMembershipDto } from './dtos/filter-membership.dto'
@@ -15,6 +18,10 @@ export class MembershipService {
   constructor(
     @InjectRepository(MembershipEntity)
     private readonly membershipRepository: Repository<MembershipEntity>,
+    @Inject(MercadoPagoService)
+    private readonly mercadoPagoService: MercadoPagoService,
+    @Inject(PlansService)
+    private readonly plansService: PlansService,
   ) {}
 
   private async checkMembershipBasics(data: CreateMembershipDto) {
@@ -48,13 +55,27 @@ export class MembershipService {
     return membership
   }
 
+  private getPaymentStatus(status): EnumMembershipStatus {
+    return match(status)
+      .with('pending', () => EnumMembershipStatus.PENDING)
+      .with('approved', () => EnumMembershipStatus.ACTIVE)
+      .with('cancelled', () => EnumMembershipStatus.CANCELED)
+      .with('rejected', () => EnumMembershipStatus.REJECTED)
+      .otherwise(() => EnumMembershipStatus.INACTIVE)
+  }
+
   async create(data: CreateMembershipDto): Promise<MembershipPayload> {
     await this.checkMembershipBasics(data)
 
+    const { price, description } = await this.plansService.findPlanById(data.teamId, data.planId)
+
+    const { id, status, payment_type_id } = await this.mercadoPagoService.createPayment(Number(price), description)
+
     const newMembership = this.membershipRepository.create({
       ...data,
-      status: EnumMembershipStatus.ACTIVE,
-      paymentMethods: EnumPaymentMethods.PIX,
+      status: this.getPaymentStatus(status),
+      paymentMethod: payment_type_id,
+      paymentId: id,
       dueDate: addOneYear(new Date()),
     })
 

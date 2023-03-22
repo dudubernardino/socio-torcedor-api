@@ -2,6 +2,8 @@ export enum EnumMembershipStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
   CANCELED = 'CANCELED',
+  PENDING = 'PENDING',
+  REJECTED = 'REJECTED',
   OVERDUE = 'OVERDUE',
 }
 

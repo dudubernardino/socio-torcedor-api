@@ -121,7 +121,7 @@ export class UserEntity extends BaseEntityAPI {
   team?: TeamEntity
 
   @OneToMany(() => MembershipEntity, (membership) => membership.user)
-  memberships: MembershipEntity[]
+  memberships?: MembershipEntity[]
 
   @OneToMany(() => CheckinEntity, (checkin) => checkin.user)
   checkins: CheckinEntity[]

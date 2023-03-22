@@ -2,11 +2,12 @@ import { PlanEntity } from '@lib/entities/plan.entity'
 import { eres } from '@lib/utils'
 import { Injectable, InternalServerErrorException, Logger, UnprocessableEntityException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import { PlanInputDto } from './dtos/create-plan.dto'
 
 import { PlanPayload } from '@lib/entities/plan.entity'
 import { UpdatePlanDto } from './dtos/update-plan.dto'
+import { StadiumSectorEntity } from '@lib/entities'
 
 @Injectable()
 export class PlansService {
@@ -15,10 +16,28 @@ export class PlansService {
   constructor(
     @InjectRepository(PlanEntity)
     private readonly plansRepository: Repository<PlanEntity>,
+    @InjectRepository(StadiumSectorEntity)
+    private readonly sectorsRepository: Repository<StadiumSectorEntity>,
   ) {}
 
-  async create(data: PlanInputDto): Promise<PlanPayload> {
-    const plan = this.plansRepository.create(data)
+  private async findSectors(sectors: string[]) {
+    const [error, sectorResult] = await eres(this.sectorsRepository.find({ where: { id: In(sectors) } }))
+
+    if (error) {
+      this.logger.error(`${PlansService.name}[findSectors]`, error)
+      throw new UnprocessableEntityException('Sector not found.')
+    }
+
+    return sectorResult
+  }
+
+  async create(teamId: string, data: PlanInputDto): Promise<PlanPayload> {
+    if (!!data?.sectors.length) {
+      const sectors = await this.findSectors(data.sectors)
+      data.sectors = sectors
+    }
+
+    const plan = this.plansRepository.create({ ...data, teamId })
 
     const [error, result] = await eres(plan.save())
 
@@ -30,31 +49,52 @@ export class PlansService {
     return PlanEntity.convertToPayload(result)
   }
 
-  async findAll(): Promise<PlanPayload[]> {
-    const plans = await this.plansRepository.find()
+  async findAll(teamId: string): Promise<PlanPayload[]> {
+    const query = this.plansRepository.createQueryBuilder('plans').leftJoinAndSelect('plans.sectors', 'sectors')
+
+    if (teamId) query.andWhere('plans.teamId = :teamId', { teamId })
+
+    const [error, plans] = await eres(query.getMany())
+
+    if (error) {
+      this.logger.error(`${PlansService.name}[findAll]`, error)
+      throw new InternalServerErrorException('Something went wrong when trying to get plans.')
+    }
 
     return plans.map((plan) => PlanEntity.convertToPayload(plan))
   }
 
-  async findPlanById(planId: string): Promise<PlanEntity> {
-    const [error, plan] = await eres(this.plansRepository.findOne({ where: { id: planId } }))
+  async findPlanById(teamId: string, planId: string): Promise<PlanEntity> {
+    const query = this.plansRepository
+      .createQueryBuilder('plans')
+      .leftJoinAndSelect('plans.sectors', 'sectors')
+      .where('plans.id = :id', { id: planId })
+
+    if (teamId) query.andWhere('plans.teamId = :teamId', { teamId })
+
+    const [error, plan] = await eres(query.getOne())
 
     if (error) {
-      this.logger.error(`${PlansService.name}[findPlanById]`, error)
-      throw new UnprocessableEntityException('Plan not found.')
+      this.logger.error(`${PlansService.name}[findAll]`, error)
+      throw new InternalServerErrorException('Something went wrong when trying to get plans.')
     }
 
     return plan
   }
 
-  async findOne(planId: string): Promise<PlanPayload> {
-    const plan = await this.findPlanById(planId)
+  async findOne(teamId: string, planId: string): Promise<PlanPayload> {
+    const plan = await this.findPlanById(teamId, planId)
 
     return PlanEntity.convertToPayload(plan)
   }
 
-  async update(planId: string, data: UpdatePlanDto): Promise<PlanPayload> {
-    const plan = await this.findPlanById(planId)
+  async update(teamId: string, planId: string, data: UpdatePlanDto): Promise<PlanPayload> {
+    const plan = await this.findPlanById(teamId, planId)
+
+    if (!!data?.sectors.length) {
+      const sectors = await this.findSectors(data.sectors)
+      data.sectors = sectors
+    }
 
     const updatedPlan = this.plansRepository.merge(plan, data)
 
@@ -69,8 +109,8 @@ export class PlansService {
     return PlanEntity.convertToPayload(result)
   }
 
-  async remove(planId: string): Promise<boolean> {
-    const plan = await this.findPlanById(planId)
+  async remove(teamId: string, planId: string): Promise<boolean> {
+    const plan = await this.findPlanById(teamId, planId)
 
     const [error] = await eres(this.plansRepository.remove(plan))
 

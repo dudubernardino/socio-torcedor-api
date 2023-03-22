@@ -1,4 +1,4 @@
-import { EnumMembershipStatus, EnumPaymentMethods } from '@lib/enums'
+import { EnumMembershipStatus } from '@lib/enums'
 import { removeEmptyFields } from '@lib/utils'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
@@ -44,6 +44,12 @@ export class MembershipPayload {
   registrationDate: Date
 
   @ApiProperty()
+  status: string
+
+  @ApiProperty()
+  paymentId: number
+
+  @ApiProperty()
   dueDate: Date
 
   @ApiPropertyOptional()
@@ -67,11 +73,14 @@ export class MembershipEntity extends BaseEntityAPI {
   @Column({ name: 'team_id', type: 'uuid' })
   teamId: string
 
+  @Column({ name: 'payment_id', type: 'int' })
+  paymentId: number
+
   @Column({ type: 'enum', enum: EnumMembershipStatus })
   status: EnumMembershipStatus
 
-  @Column({ name: 'payment_method', type: 'enum', enum: EnumPaymentMethods })
-  paymentMethods: EnumPaymentMethods
+  @Column({ name: 'payment_method' })
+  paymentMethod: string
 
   @Column({
     name: 'registration_date',
@@ -116,6 +125,8 @@ export class MembershipEntity extends BaseEntityAPI {
           name: membership?.user?.name,
         },
         registrationDate: membership.registrationDate,
+        status: membership?.status,
+        paymentId: membership?.paymentId,
         dueDate: membership.dueDate,
         createdAt: membership.createdAt,
         updatedAt: membership.updatedAt,

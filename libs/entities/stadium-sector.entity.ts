@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { BaseEntityAPI } from './base.entity'
 import { CheckinEntity } from './checkin.entity'
+import { PlanEntity } from './plan.entity'
 import { StadiumEntity } from './stadium.entity'
 
 @Entity({ name: 'stadiums_sector' })
@@ -26,4 +27,7 @@ export class StadiumSectorEntity extends BaseEntityAPI {
 
   @OneToMany(() => CheckinEntity, (checkin) => checkin.sector)
   checkins: CheckinEntity[]
+
+  @ManyToMany(() => PlanEntity)
+  plans: PlanEntity[]
 }

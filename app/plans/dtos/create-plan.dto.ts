@@ -16,4 +16,8 @@ export class PlanInputDto {
   @IsNumber()
   @IsNotEmpty()
   price: number
+
+  @ApiProperty({ isArray: true })
+  @IsNotEmpty()
+  sectors: any[]
 }

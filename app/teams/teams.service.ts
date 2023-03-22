@@ -7,10 +7,10 @@ import { TeamAppInputDto } from './dtos/create-team-app.dto'
 import { TeamInputDto } from './dtos/create-team.dto'
 
 import { v4 as uuidv4 } from 'uuid'
-import { generateSecret } from 'libs/generate-password'
 import { UpdateTeamInputDto } from './dtos/update-team.dto'
 import { EntityStatus } from '@lib/enums'
 import { FilterTeamDto } from './dtos/filter-team-dto'
+import { generateSecret } from '@lib/generate-password'
 
 @Injectable()
 export class TeamsService {
