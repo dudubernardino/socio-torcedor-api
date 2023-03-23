@@ -34,6 +34,8 @@
       "@lib/generate-password/*": ["libs/generate-password/*"],
       "@lib/mercado-pago": ["libs/mercado-pago"],
       "@lib/mercado-pago/*": ["libs/mercado-pago/*"],
+      "@lib/emails": ["libs/emails"],
+      "@lib/emails/*": ["libs/emails/*"],
     }
   }
 }

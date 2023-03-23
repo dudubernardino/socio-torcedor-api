@@ -3,11 +3,12 @@ import { EnumRoles } from '@lib/enums'
 import { Roles } from '@lib/jwt'
 import { JwtAuthGuard, RolesGuard } from '@lib/jwt/guards'
 import { HttpExceptionFilter } from '@lib/utils'
-import { Body, Controller, Delete, Get, Param, Post, Req, UseFilters, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseFilters, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { CheckinsService } from './checkin.service'
 
 import { CreateCheckinDto } from './dtos/create-checkin.dto'
+import { FilterCheckinsDto } from './dtos/filter-checkin.dto'
 
 @Controller('checkin')
 @ApiTags('/checkin')
@@ -24,10 +25,18 @@ export class CheckinController {
     return result
   }
 
+  @Post(':checkinId')
+  @Roles(EnumRoles.USER)
+  async sendEmail(@Req() { user }: { user: UserJwtPayload }, @Param('checkinId') checkinId: string): Promise<any> {
+    const result = await this.checkinsService.sendEmail(user, checkinId)
+
+    return result
+  }
+
   @Get(':matchId/all')
   @Roles(EnumRoles.SUPER_ADMIN, EnumRoles.ADMIN, EnumRoles.MANAGER)
-  async findAll(@Param('matchId') matchId: string): Promise<any> {
-    const result = await this.checkinsService.findAll(matchId)
+  async findAll(@Param('matchId') matchId: string, @Query() filter: FilterCheckinsDto): Promise<any> {
+    const result = await this.checkinsService.findAll(matchId, filter)
 
     return result
   }

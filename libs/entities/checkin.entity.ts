@@ -1,4 +1,4 @@
-import { removeEmptyFields } from '@lib/utils'
+import { maskCpfCnpj, removeEmptyFields } from '@lib/utils'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { BaseEntityAPI } from './base.entity'
@@ -9,6 +9,7 @@ import { UserEntity } from './user.entity'
 class User {
   id: string
   name: string
+  taxId: string
 }
 
 class Match {
@@ -81,13 +82,14 @@ export class CheckinEntity extends BaseEntityAPI {
   @JoinColumn({ name: 'match_id' })
   match: MatchEntity
 
-  static convertToPayload = (checkin: CheckinEntity): CheckinPayload => {
+  static convertToPayload = (checkin: CheckinEntity, isTaxIdHidden = true): CheckinPayload => {
     return new CheckinPayload(
       removeEmptyFields({
         id: checkin.id,
         user: {
           id: checkin?.user?.id,
           name: checkin?.user?.name,
+          taxId: isTaxIdHidden ? maskCpfCnpj(checkin?.user?.taxId) : checkin?.user?.taxId,
         },
         match: {
           id: checkin?.match?.id,

@@ -16,5 +16,6 @@ import { TeamsService } from './teams.service'
   ],
   controllers: [TeamsController],
   providers: [TeamsService, JwtStrategy],
+  exports: [TeamsService],
 })
 export class TeamsModule {}
