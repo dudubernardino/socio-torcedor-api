@@ -14,13 +14,13 @@ steps:
         '.',
       ]
 
-  # - id: Tag previous dev-latest as dev-fallback
-  #   name: 'gcr.io/cloud-builders/gcloud-slim'
-  #   entrypoint: bash
-  #   args:
-  #     - -c
-  #     - |
-  #       gcloud artifacts docker tags add ${_DOCKER_REGISTRY}/${_SERVICE}:latest ${_DOCKER_REGISTRY}/${_SERVICE}:fallback
+  - id: Tag previous dev-latest as dev-fallback
+    name: 'gcr.io/cloud-builders/gcloud-slim'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud artifacts docker tags add ${_DOCKER_REGISTRY}/${_SERVICE}:latest ${_DOCKER_REGISTRY}/${_SERVICE}:fallback
 
   - id: Docker Push
     name: 'gcr.io/cloud-builders/docker'
@@ -31,7 +31,7 @@ steps:
         docker push --all-tags ${_DOCKER_REGISTRY}/${_SERVICE}
 
   - id: 'Terraform deploy'
-    name: 'hashicorp/terraform:1.1.8'
+    name: 'hashicorp/terraform:1.3.9'
     entrypoint: 'sh'
     args:
       - '-c'
@@ -41,9 +41,6 @@ steps:
         terraform init
         terraform validate
         terraform apply -auto-approve -var="project_id=socio-torcedor-api" -var="docker_image_name=${_DOCKER_REGISTRY}/${_SERVICE}:${SHORT_SHA}"
-  - id: Run Integration Tests on dev
-    name: 'alpine'
-    args: ['echo', '"Put your Integration tests here!"']
 
 logsBucket: 'gs://socio-torcedor-api-cicd-merge-build-logs'
 
