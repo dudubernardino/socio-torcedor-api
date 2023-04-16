@@ -1,6 +1,6 @@
 resource "google_service_account" "terraform_service_account" {
   display_name = "Cloud Build Service Account para OPS"
-  account_id   = "socio-torcedor-terraform"
+  account_id   = "${var.project_id}-terraform"
   project      = var.project_id
 }
 
