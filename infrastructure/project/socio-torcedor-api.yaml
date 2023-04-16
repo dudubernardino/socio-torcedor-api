@@ -1,0 +1,8 @@
+environment_vars:
+  SG_TOKEN: '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'
+default_autoscalling_config:
+  max_scale: '5'
+  min_scale: '0'
+  scale_down_delay: '0s'
+  startup_cpu_boost: 'false'
+  cpu_throttling: 'true'

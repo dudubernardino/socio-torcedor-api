@@ -37,7 +37,7 @@ steps:
       - '-c'
       - |
         ls -la
-        cd infrastructure/terraform
+        cd infrastructure/terraform/cloud_run
         terraform init
         terraform validate
         terraform apply -auto-approve -var="project_id=socio-torcedor-api" -var="docker_image_name=${_DOCKER_REGISTRY}/${_SERVICE}:${SHORT_SHA}"
