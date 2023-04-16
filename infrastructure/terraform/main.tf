@@ -82,20 +82,18 @@ module "postgres" {
   ]
 }
 
-# module "cloud_run_service" {
-#   source                   = "./cloud_run"
-#   project_id               = var.project_id
-#   docker_image_name        = var.docker_image_name
-#   service_application_name = var.service_application_name
-#   container_port           = 3000
-#   region                   = var.region
-#   postgres_host            = module.postgres.postgres_internal_ip
-#   vpc_access_connector     = module.postgres.vpc_access_connector
+module "cloud_run_service" {
+  source                   = "./cloud_run"
+  project_id               = var.project_id
+  docker_image_name        = var.docker_image_name
+  service_application_name = var.service_application_name
+  container_port           = 3000
+  region                   = var.region
 
-#   depends_on = [
-#     module.postgres
-#   ]
-# }
+  depends_on = [
+    module.postgres
+  ]
+}
 
 
 

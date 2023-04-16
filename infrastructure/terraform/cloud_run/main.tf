@@ -1,7 +1,7 @@
 # Create the Cloud Run service
 
 locals {
-  project_config = yamldecode(file(pathexpand("../../project/${var.project_id}.yaml")))
+  project_config = yamldecode(file(pathexpand("../project/${var.project_id}.yaml")))
   autoscalling_annotations_mapping = {
     "max_scale"         = "autoscaling.knative.dev/maxScale",
     "min_scale"         = "autoscaling.knative.dev/minScale",
@@ -78,13 +78,6 @@ data "google_iam_policy" "iam_policy" {
     role    = "roles/run.invoker"
     members = ["allUsers"]
   }
-}
-
-resource "google_cloud_run_service_iam_policy" "iam_policy" {
-  location = google_cloud_run_service.cloud_run.location
-  service  = google_cloud_run_service.cloud_run.name
-
-  policy_data = data.google_iam_policy.iam_policy.policy_data
 }
 
 data "google_storage_bucket" "postgres" {
