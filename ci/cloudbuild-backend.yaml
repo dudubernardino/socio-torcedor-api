@@ -1,0 +1,56 @@
+steps:
+  - id: Docker Build
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        '${_DOCKER_REGISTRY}:${SHORT_SHA}',
+        '-t',
+        '${_DOCKER_REGISTRY}:latest',
+        '--no-cache',
+        '-f',
+        'ci/Dockerfile',
+        '.',
+      ]
+
+  - id: Tag previous dev-latest as dev-fallback
+    name: 'gcr.io/cloud-builders/gcloud-slim'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud artifacts docker tags add ${_DOCKER_REGISTRY}:latest ${_DOCKER_REGISTRY}:fallback
+
+  - id: Docker Push
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - -c
+      - |
+        docker push --all-tags ${_DOCKER_REGISTRY}
+
+  - id: 'Terraform deploy consumer auth'
+    name: 'hashicorp/terraform:1.1.8'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        ls -la
+        cd infrastructure/terraform
+        terraform init
+        terraform validate
+        terraform apply -auto-approve -var="project_id=socio-torcedor-api" -var="docker_image_name=${_DOCKER_REGISTRY}:${SHORT_SHA}"
+  - id: Run Integration Tests on dev
+    name: 'alpine'
+    args: ['echo', '"Put your Integration tests here!"']
+
+logsBucket: 'gs://iniciador-cicd-merge-build-logs'
+
+timeout: 1800s
+
+substitutions:
+  _DOCKER_REGISTRY: us-east1-docker.pkg.dev/socio-torcedor-api/socio-torcedor
+
+options:
+  machineType: 'E2_HIGHCPU_8'
