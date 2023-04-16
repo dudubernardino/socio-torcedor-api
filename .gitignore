@@ -36,10 +36,12 @@ lerna-debug.log*
 .env
 
 # terraform
-*.tfstate
-*.tfstate.*
+# *.tfstate
+# *.tfstate.*
 .terraform
 .env copy
-/infra/terraform/credentials.json
+/infrastructure/terraform/terraform.tfstate
+/infrastructure/terraform/terraform.tfstate.backup
+/infrastructure/terraform/credentials.json
 credentials.json
 
