@@ -80,6 +80,13 @@ data "google_iam_policy" "iam_policy" {
   }
 }
 
+resource "google_cloud_run_service_iam_policy" "iam_policy" {
+  location = google_cloud_run_service.cloud_run.location
+  service  = google_cloud_run_service.cloud_run.name
+
+  policy_data = data.google_iam_policy.iam_policy.policy_data
+}
+
 data "google_storage_bucket" "postgres" {
   name = "${var.project_id}-postgres"
 }
