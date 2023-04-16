@@ -45,7 +45,7 @@ steps:
     name: 'alpine'
     args: ['echo', '"Put your Integration tests here!"']
 
-logsBucket: 'gs://iniciador-cicd-merge-build-logs'
+logsBucket: 'gs://socio-torcedor-api-cicd-merge-build-logs'
 
 timeout: 1800s
 
