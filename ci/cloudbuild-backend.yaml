@@ -14,13 +14,13 @@ steps:
         '.',
       ]
 
-  # - id: Tag previous dev-latest as dev-fallback
-  #   name: 'gcr.io/cloud-builders/gcloud-slim'
-  #   entrypoint: bash
-  #   args:
-  #     - -c
-  #     - |
-  #       gcloud artifacts docker tags add ${_DOCKER_REGISTRY}/${_SERVICE}:latest ${_DOCKER_REGISTRY}/${_SERVICE}:fallback
+  - id: Tag previous dev-latest as dev-fallback
+    name: 'gcr.io/cloud-builders/gcloud-slim'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud artifacts docker tags add ${_DOCKER_REGISTRY}/${_SERVICE}:latest ${_DOCKER_REGISTRY}/${_SERVICE}:fallback
 
   - id: Docker Push
     name: 'gcr.io/cloud-builders/docker'

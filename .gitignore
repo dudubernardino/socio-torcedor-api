@@ -39,7 +39,6 @@ lerna-debug.log*
 *.tfstate
 *.tfstate.*
 .terraform
-.terraform.lock.hcl
 .env copy
 /infra/terraform/credentials.json
 credentials.json
