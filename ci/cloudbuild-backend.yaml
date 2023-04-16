@@ -14,13 +14,13 @@ steps:
         '.',
       ]
 
-  - id: Tag previous dev-latest as dev-fallback
-    name: 'gcr.io/cloud-builders/gcloud-slim'
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        gcloud artifacts docker tags add ${_DOCKER_REGISTRY}:latest ${_DOCKER_REGISTRY}:fallback
+  # - id: Tag previous dev-latest as dev-fallback
+  #   name: 'gcr.io/cloud-builders/gcloud-slim'
+  #   entrypoint: bash
+  #   args:
+  #     - -c
+  #     - |
+  #       gcloud artifacts docker tags add ${_DOCKER_REGISTRY}:latest ${_DOCKER_REGISTRY}:fallback
 
   - id: Docker Push
     name: 'gcr.io/cloud-builders/docker'
@@ -30,7 +30,7 @@ steps:
       - |
         docker push --all-tags ${_DOCKER_REGISTRY}
 
-  - id: 'Terraform deploy consumer auth'
+  - id: 'Terraform deploy'
     name: 'hashicorp/terraform:1.1.8'
     entrypoint: 'sh'
     args:
