@@ -10,7 +10,7 @@ steps:
         '${_DOCKER_REGISTRY}/${_SERVICE}:latest',
         '--no-cache',
         '-f',
-        'ci/Dockerfile',
+        'Dockerfile',
         '.',
       ]
 
