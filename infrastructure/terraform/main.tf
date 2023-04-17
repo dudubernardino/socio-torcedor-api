@@ -1,4 +1,9 @@
 terraform {
+  backend "gcs" {
+    bucket = "socio-torcedor-terraform-ops"
+    prefix = "state-base"
+  }
+
   required_version = ">= 0.13"
   required_providers {
     google = {

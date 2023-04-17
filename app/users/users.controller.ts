@@ -19,7 +19,7 @@ export class UsersController {
 
   @Get('teste')
   async test() {
-    return 'TESTE BUILD UHUUUUUUUU'
+    return 'TESTE CLOUD BUILD UHUUUUUUUU'
   }
 
   @Post()
