@@ -18,13 +18,18 @@ variable "service_application_name" {
 }
 
 variable "connect_database" {
-  type    = bool
-  default = true
+  type = bool
 }
 
 variable "connect_vpc" {
   type    = bool
   default = true
+}
+
+variable "enable_secret_access" {
+  type        = bool
+  description = "Enable/disable service access to secrets"
+  default     = false
 }
 
 variable "region" {
@@ -61,4 +66,9 @@ variable "cloud_run_annotations" {
   type        = map(string)
   description = "metadata annotations"
   default     = {}
+}
+
+variable "secrets" {
+  type    = set(string)
+  default = []
 }

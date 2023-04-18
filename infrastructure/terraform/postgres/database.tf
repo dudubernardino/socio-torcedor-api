@@ -1,6 +1,16 @@
 locals {
-  db_username = "admin"
-  db_password = "admin"
+  db_username = "superadmin"
+  db_password = random_password.password.result
+}
+
+resource "random_string" "username" {
+  length  = 16
+  special = false
+}
+
+resource "random_password" "password" {
+  length  = 16
+  special = true
 }
 
 module "postgresql" {
@@ -45,4 +55,17 @@ module "postgresql" {
   ]
 
   create_timeout = "30m"
+}
+
+resource "google_secret_manager_secret" "postgress_password" {
+  project   = var.project_id
+  secret_id = "POSTGRES_PASSWORD"
+
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
 }

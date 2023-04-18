@@ -1,14 +1,5 @@
 environment_vars:
-  JWT_SECRET: 'x0oKeHSL3YriWqkKYjHWIdw3xlMe2bsJ'
-  JWT_EXPIRATION_TIME: '365d'
-  SUPER_ADMIN_NAME: 'Eduardo Bernardino'
-  SUPER_ADMIN_EMAIL: 'eduardomoura.moura@gmail.com'
-  SUPER_ADMIN_SECRET: 'P@assword123'
-  SUPER_ADMIN_TAX_ID: '07925791357'
   MERCADO_PAGO_API_URL: 'https://api.mercadopago.com'
-  MERCADO_PAGO_PUBLIC_KEY: 'TEST-e0eecfc6-e5d4-47bf-87f1-d3f9e05e2a2a'
-  MERCADO_PAGO_ACCESS_TOKEN: 'TEST-6898968571245610-032005-49514b90ae97a4fa1c0f070f3b21fbe8-221307443'
-  SG_TOKEN: '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'
 default_autoscalling_config:
   max_scale: '5'
   min_scale: '0'

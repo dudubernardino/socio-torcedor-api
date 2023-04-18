@@ -39,9 +39,9 @@ resource "google_cloud_run_service" "run_service" {
           for_each = var.connect_database ? merge(tomap({
             "POSTGRES_HOST" = data.google_storage_bucket_object_content.postgres_internal_ip.content
             "POSTGRES_PORT" : "5432"
-            "POSTGRES_USER"     = "admin"
-            "POSTGRES_PASSWORD" = "admin"
-            "POSTGRES_DB"       = "${var.project_id}-db"
+            "POSTGRES_USER" = data.google_storage_bucket_object_content.postgres_username.content
+            "POSTGRES_DB"   = "${var.project_id}-db"
+            "DB_SSL_CA_CRT" = data.google_storage_bucket_object_content.postgres_certificate.content
             }), local.environment_variables,
             tomap({
               "SERVICE_NAME" : var.service_application_name
@@ -49,6 +49,19 @@ resource "google_cloud_run_service" "run_service" {
           content {
             name  = env.key
             value = env.value
+          }
+        }
+
+        dynamic "env" {
+          for_each = data.google_secret_manager_secret.secret_lookup
+          content {
+            name = env.key
+            value_from {
+              secret_key_ref {
+                name = env.key
+                key  = "latest"
+              }
+            }
           }
         }
       }
@@ -73,13 +86,6 @@ resource "google_cloud_run_service" "run_service" {
 
 }
 
-data "google_iam_policy" "iam_policy" {
-  binding {
-    role    = "roles/run.invoker"
-    members = ["allUsers"]
-  }
-}
-
 data "google_storage_bucket" "postgres" {
   name = "${var.project_id}-postgres"
 }
@@ -89,9 +95,26 @@ data "google_storage_bucket_object_content" "postgres_internal_ip" {
   bucket = data.google_storage_bucket.postgres.id
 }
 
+data "google_storage_bucket_object_content" "postgres_username" {
+  name   = "postgres-username"
+  bucket = data.google_storage_bucket.postgres.id
+}
+
+data "google_storage_bucket_object_content" "postgres_certificate" {
+  name   = "postgres-certificate"
+  bucket = data.google_storage_bucket.postgres.id
+}
+
 data "google_storage_bucket_object_content" "vpc_access_connector" {
   name   = "vpc-access-connector"
   bucket = data.google_storage_bucket.postgres.id
+}
+
+data "google_iam_policy" "iam_policy" {
+  binding {
+    role    = "roles/run.invoker"
+    members = ["allUsers"]
+  }
 }
 
 resource "google_cloud_run_service_iam_policy" "iam_policy" {

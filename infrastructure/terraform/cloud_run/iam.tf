@@ -23,3 +23,14 @@ resource "google_project_iam_member" "backend_sql_client" {
   role    = "roles/cloudsql.client"
   member  = "serviceAccount:${google_service_account.cloud_run_service_account.email}"
 }
+
+###############################
+####### Secrets Manager #######
+###############################
+
+resource "google_project_iam_member" "service_account_secret_iam" {
+  project = var.project_id
+  count   = var.enable_secret_access ? 1 : 0
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.cloud_run_service_account.email}"
+}

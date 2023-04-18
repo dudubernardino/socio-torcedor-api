@@ -3,17 +3,9 @@ terraform {
     bucket = "socio-torcedor-terraform-ops"
     prefix = "state-base"
   }
-
-  required_version = ">= 0.13"
   required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 4.5"
-    }
-    google-beta = {
-      source  = "hashicorp/google-beta"
-      version = "~> 4.5"
-    }
+    google      = ">= 3.43, < 5.0"
+    google-beta = ">= 3.43, < 5.0"
   }
 }
 
@@ -94,6 +86,20 @@ module "cloud_run_service" {
   service_application_name = var.service_application_name
   container_port           = 3000
   region                   = var.region
+  connect_database         = true
+  enable_secret_access     = true
+  secrets = [
+    "POSTGRES_PASSWORD",
+    "JWT_SECRET",
+    "JWT_EXPIRATION_TIME",
+    "SUPER_ADMIN_NAME",
+    "SUPER_ADMIN_EMAIL",
+    "SUPER_ADMIN_SECRET",
+    "SUPER_ADMIN_TAX_ID",
+    "MERCADO_PAGO_PUBLIC_KEY",
+    "MERCADO_PAGO_ACCESS_TOKEN",
+    "SG_TOKEN"
+  ]
 
   depends_on = [
     module.postgres
