@@ -1,0 +1,48 @@
+steps:
+  ######## Migrations
+  # Creating and executing Cloud Run Jobs are still not in terrafom :(
+  # https://github.com/hashicorp/terraform-provider-google/issues/11743
+
+  - id: build-migration-image
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        '${_DOCKER_REGISTRY}/migration:${SHORT_SHA}',
+        '-t',
+        '${_DOCKER_REGISTRY}/migration:latest',
+        '-f',
+        'Dockerfile.migration',
+        '.',
+      ]
+    waitFor: ['-']
+
+  - id: push-migration-image
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - -c
+      - |
+        docker push --all-tags ${_DOCKER_REGISTRY}/migration
+    waitFor: ['build-migration-image']
+
+  - id: db-migrations
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud beta run jobs update socio-torcedor-api-migration --image=${_DOCKER_REGISTRY}/migration:${SHORT_SHA} --project=socio-torcedor-api --region=us-east1
+        gcloud beta run jobs execute socio-torcedor-api-migration --project=socio-torcedor-api --region=us-east1 --wait
+    waitFor: ['push-migration-image']
+
+logsBucket: 'gs://socio-torcedor-api-cicd-merge-build-logs'
+
+timeout: 1800s
+
+substitutions:
+  _DOCKER_REGISTRY: us-central1-docker.pkg.dev/socio-torcedor-api/socio-torcedor
+
+options:
+  machineType: 'E2_HIGHCPU_8'

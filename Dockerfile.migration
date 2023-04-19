@@ -1,0 +1,37 @@
+FROM node:18-alpine as BUILD_IMAGE
+
+# basic requirements
+RUN apk update && apk add yarn curl bash &&\
+    rm -rf /var/cache/apk/*
+
+WORKDIR /app/src
+
+RUN yarn add \
+    typeorm@0.3.11 \ 
+    ts-node \
+    tsconfig-paths@4.1.2 \
+    typescript @types/node \
+    pg@8.9.0
+
+COPY . .
+
+#########
+FROM alpine
+
+WORKDIR /app/src
+
+RUN apk add --update --no-cache nodejs=18.14.2-r0 yarn &&  rm -rf /var/cache/apk/*
+
+RUN addgroup -g 1001 migrathor && adduser -S -u 1001 -G migrathor migrathor
+
+COPY --chown=migrathor:migrathor --from=BUILD_IMAGE /app/src/tsconfig.json \
+    /app/src/package.json \
+    /app/src/yarn.lock ./
+
+COPY --chown=migrathor:migrathor --from=BUILD_IMAGE /app/src/libs ./libs
+COPY --chown=migrathor:migrathor --from=BUILD_IMAGE /app/src/app ./app
+COPY --chown=migrathor:migrathor --from=BUILD_IMAGE /app/src/node_modules ./node_modules
+
+USER migrathor
+
+CMD ["yarn", "migration:up"]

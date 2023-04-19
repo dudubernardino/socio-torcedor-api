@@ -88,6 +88,7 @@ module "cloud_run_service" {
   region                   = var.region
   connect_database         = true
   enable_secret_access     = true
+  email                    = module.service_accounts.email
   secrets = [
     "POSTGRES_PASSWORD",
     "JWT_SECRET",
