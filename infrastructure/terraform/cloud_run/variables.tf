@@ -1,10 +1,6 @@
 variable "project_id" {
   type = string
 }
-
-variable "email" {
-  type = string
-}
 variable "docker_image_name" {
   type    = string
   default = "us-central1-docker.pkg.dev/socio-torcedor-api/socio-torcedor/socio-torcedor-backend:latest"

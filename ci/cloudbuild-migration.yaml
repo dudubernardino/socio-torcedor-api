@@ -33,8 +33,8 @@ steps:
     args:
       - '-c'
       - |
-        gcloud beta run jobs update socio-torcedor-api-migration --image=${_DOCKER_REGISTRY}/migration:${SHORT_SHA} --project=socio-torcedor-api --region=us-east1
-        gcloud beta run jobs execute socio-torcedor-api-migration --project=socio-torcedor-api --region=us-east1 --wait
+        gcloud beta run jobs update socio-torcedor-api-migration --image=${_DOCKER_REGISTRY}/migration:${SHORT_SHA} --project=socio-torcedor-api --region=us-central1
+        gcloud beta run jobs execute socio-torcedor-api-migration --project=socio-torcedor-api --region=us-central1 --wait
     waitFor: ['push-migration-image']
 
 logsBucket: 'gs://socio-torcedor-api-cicd-merge-build-logs'

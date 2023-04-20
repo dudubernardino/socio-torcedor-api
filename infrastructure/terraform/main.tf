@@ -88,7 +88,6 @@ module "cloud_run_service" {
   region                   = var.region
   connect_database         = true
   enable_secret_access     = true
-  email                    = module.service_accounts.email
   secrets = [
     "POSTGRES_PASSWORD",
     "JWT_SECRET",
@@ -107,6 +106,30 @@ module "cloud_run_service" {
   ]
 }
 
+# # Creating and executing Cloud Run Jobs are still not in terrafom :(
+# # https://github.com/hashicorp/terraform-provider-google/issues/11743
+# module "gcloud" {
+#   source  = "terraform-google-modules/gcloud/google"
+#   version = "3.1.1"
 
+#   platform              = "linux"
+#   additional_components = ["beta"]
 
+#   create_cmd_body = "beta run jobs create ${var.project_id}-migration --project=${var.project_id} --set-secrets=POSTGRES_PASSWORD=POSTGRES_PASSWORD:latest --set-env-vars=POSTGRES_DB=${var.project_id}-db,POSTGRES_USER=superadmin,POSTGRES_HOST=${module.postgres.postgres_internal_ip},POSTGRES_PORT=5432 --vpc-connector=${module.postgres.vpc_access_connector} --image=us-central1-docker.pkg.dev/socio-torcedor-api/socio-torcedor/migration:latest --region=${var.region} --service-account=serviceAccount:${module.service_accounts.email} --memory=1024Mi"
+#   # destroy_cmd_body = "beta run jobs delete ${each.key}-migration --project=${each.key} --region=${var.region} --quiet && sleep 60"
 
+#   depends_on = [
+#     module.cloud_run_service
+#   ]
+# }
+
+resource "null_resource" "cloud_run_job" {
+  # Configuração do provisioner para executar o comando gcloud
+  provisioner "local-exec" {
+    command = "gcloud beta run jobs create ${var.project_id}-migration --project=${var.project_id} --set-secrets=POSTGRES_PASSWORD=POSTGRES_PASSWORD:latest --set-env-vars=POSTGRES_DB=${var.project_id}-db,POSTGRES_USER=superadmin,POSTGRES_HOST=${module.postgres.postgres_internal_ip},POSTGRES_PORT=5432 --vpc-connector=${module.postgres.vpc_access_connector} --image=us-central1-docker.pkg.dev/socio-torcedor-api/socio-torcedor/migration:latest --region=${var.region} --service-account=cloud-run-job@socio-torcedor-api.iam.gserviceaccount.com --memory=1024Mi"
+  }
+
+  depends_on = [
+    module.postgres
+  ]
+}

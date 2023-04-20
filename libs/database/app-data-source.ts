@@ -6,7 +6,7 @@ const datasource = new DataSource({
   port: Number(process.env.POSTGRES_PORT || 5432),
   username: process.env.POSTGRES_USER || 'iniciador_user',
   password: process.env.POSTGRES_PASSWORD || 'magical_password',
-  database: process.env.POSTGRES_DB || 'socio_db',
+  database: process.env.POSTGRES_DB || 'socio_db_migrations',
   migrations: ['libs/database/migrations/**/*.ts'],
   entities: ['libs/entities/**/*.entity.ts'],
   migrationsRun: true,
