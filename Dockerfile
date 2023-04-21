@@ -12,7 +12,7 @@ RUN yarn install --frozen-lockfile
 
 COPY . .
 
-RUN yarn BUILD_IMAGE
+RUN yarn build
 
 ######
 FROM node:14-alpine
