@@ -1,4 +1,4 @@
-FROM node:18-alpine as build
+FROM node:18-alpine as BUILD_IMAGE
 
 # basic requirements
 RUN apk update && apk add python3 yarn curl bash &&\
@@ -12,7 +12,7 @@ RUN yarn install --frozen-lockfile
 
 COPY . .
 
-RUN yarn build
+RUN yarn BUILD_IMAGE
 
 ######
 FROM node:14-alpine
@@ -21,8 +21,8 @@ WORKDIR /app
 
 RUN yarn install --frozen-lockfile --production
 
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
+COPY --from=BUILD_IMAGE /app/dist ./dist
+COPY --from=BUILD_IMAGE /app/node_modules ./node_modules
 
 ENV NODE_ENV=production
 
