@@ -8,8 +8,8 @@ const datasource = new DataSource({
   password: process.env.POSTGRES_PASSWORD || 'magical_password',
   database: process.env.POSTGRES_DB || 'socio_db',
   migrations: ['libs/database/migrations/**/*.ts'],
-  entities: ['libs/entities/**/*.entity.ts'],
   migrationsRun: true,
+  parseInt8: true,
 })
 
 datasource.initialize()
