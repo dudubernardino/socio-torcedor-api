@@ -20,7 +20,7 @@ steps:
     args:
       - -c
       - |
-        gcloud artifacts docker tags add ${_DOCKER_REGISTRY}/${_SERVICE}:latest ${_DOCKER_REGISTRY}/${_SERVICE}:fallback
+        gcloud artifacts docker tags add ${_DOCKER_REGISTRY}/${_SERVICE}:latest ${_DOCKER_REGISTRY}/${_SERVICE}:fallback || exit 0
 
   - id: Docker Push
     name: 'gcr.io/cloud-builders/docker'
