@@ -17,11 +17,6 @@ import { UsersService } from './users.service'
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get('teste')
-  async test() {
-    return 'TESTE CLOUD BUILD UHUUUUUUUU'
-  }
-
   @Post()
   @Roles(EnumRoles.SUPER_ADMIN, EnumRoles.ADMIN)
   async create(@Req() { user }: { user: UserJwtPayload }, @Body() data: UserInputDto): Promise<UserPayload> {

@@ -195,14 +195,14 @@ export class CheckinsService {
 
     const newCheckin = this.checkinsRepository.create({ ...data, userId: user.id, checkinTime: new Date() })
 
-    const [error, checkin] = await eres(newCheckin.save())
+    const [error, checkin] = await eres(this.checkinsRepository.save(newCheckin))
 
     if (error) {
       this.logger.error(`${CheckinsService.name}[create - teamId: ${user.teamId}]`, error)
       throw new UnprocessableEntityException('Something went wrong when trying to create a checkin.')
     }
 
-    await this.sendEmail(user, checkin.id)
+    await this.sendEmail(user, checkin.matchId)
 
     return CheckinEntity.convertToPayload(checkin)
   }
