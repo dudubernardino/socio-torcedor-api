@@ -52,7 +52,11 @@ export class TeamsService {
   }
 
   async findAll(filter: FilterTeamDto): Promise<TeamPayload[]> {
-    const query = this.teamsRepository.createQueryBuilder('teams').withDeleted()
+    const query = this.teamsRepository
+      .createQueryBuilder('teams')
+      .innerJoinAndSelect('teams.users', 'users')
+      .leftJoinAndSelect('users.memberships', 'memberships')
+      .withDeleted()
 
     if (filter.name)
       query.where('teams.name ilike :name', {

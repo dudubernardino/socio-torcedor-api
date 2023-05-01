@@ -101,6 +101,14 @@ export class TeamEntity extends BaseEntityAPI {
         mainColor: team.mainColor,
         avatar: team.avatar,
         fee: team.fee,
+        users: team.users?.map((user) => ({
+          id: user.id,
+          name: user.name,
+          memberships: user.memberships?.map((membership) => ({
+            id: membership.id,
+            status: membership.status,
+          })),
+        })),
         description: team.description,
         createdAt: team.createdAt,
         updatedAt: team.updatedAt,

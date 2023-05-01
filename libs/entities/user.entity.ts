@@ -153,10 +153,18 @@ export class UserEntity extends BaseEntityAPI {
         homePhone: user.homePhone,
         workPhone: user.workPhone,
         cellPhone: user.cellPhone,
+        role: user.role,
         team: {
           id: user?.team?.id,
           name: user?.team?.name,
         },
+        memberships: user.memberships?.map((membership) => ({
+          id: membership.id,
+          status: membership.status,
+          registrationDate: membership.registrationDate,
+          paymentId: membership?.paymentId,
+          dueDate: membership.dueDate,
+        })),
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       }),

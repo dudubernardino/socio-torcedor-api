@@ -80,7 +80,10 @@ export class UsersService {
   async findAll(teamId: string, filter: FilterUserDto): Promise<UserPayload[]> {
     this.logger.log(`${UsersService.name}[findAll]: Users from TeamId: ${teamId}`)
 
-    const query = this.userRepository.createQueryBuilder('users').leftJoinAndSelect('users.team', 'team')
+    const query = this.userRepository
+      .createQueryBuilder('users')
+      .leftJoinAndSelect('users.team', 'team')
+      .leftJoinAndSelect('users.memberships', 'memberships')
 
     if (teamId) query.where('users.teamId = :teamId', { teamId })
 
