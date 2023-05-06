@@ -54,7 +54,7 @@ export class TeamsService {
   async findAll(filter: FilterTeamDto): Promise<TeamPayload[]> {
     const query = this.teamsRepository
       .createQueryBuilder('teams')
-      .innerJoinAndSelect('teams.users', 'users')
+      .leftJoinAndSelect('teams.users', 'users')
       .leftJoinAndSelect('users.memberships', 'memberships')
       .withDeleted()
 
@@ -95,7 +95,9 @@ export class TeamsService {
   }
 
   async findTeamById(id: string): Promise<TeamEntity> {
-    const [error, team] = await eres(this.teamsRepository.findOne({ where: { id }, withDeleted: true }))
+    const [error, team] = await eres(
+      this.teamsRepository.findOne({ where: { id }, relations: ['users', 'users.memberships'], withDeleted: true }),
+    )
 
     if (error || !team) {
       this.logger.error(`${TeamsService.name}[findTeamById - id: ${id}]`, error)
