@@ -31,7 +31,9 @@ export class UsersController {
     @Req() { user }: { user: UserJwtPayload },
     @Body() data: UserInputDto,
   ): Promise<UserPayload> {
-    const result = await this.usersService.create({ ...data, teamId: user.id })
+    const teamId = user.teamId || data.teamId
+
+    const result = await this.usersService.create({ ...data, teamId })
 
     return result
   }
