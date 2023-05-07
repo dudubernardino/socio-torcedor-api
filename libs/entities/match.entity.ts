@@ -8,7 +8,18 @@ import { TeamEntity } from './team.entity'
 
 class Stadium {
   @ApiProperty()
+  id: string
+
+  @ApiProperty()
   name: string
+}
+
+class Checkins {
+  @ApiProperty()
+  id: string
+
+  @ApiProperty()
+  userId: string
 }
 
 export class MatchPayload {
@@ -21,6 +32,9 @@ export class MatchPayload {
 
   @ApiProperty()
   stadium: Stadium
+
+  @ApiProperty({ isArray: true })
+  checkins: Checkins[]
 
   @ApiProperty()
   homeTeam: string
@@ -91,8 +105,13 @@ export class MatchEntity extends BaseEntityAPI {
         awayTeamScore: match.awayTeamScore,
         startTime: match.startTime,
         stadium: {
+          id: match?.stadium?.id,
           name: match?.stadium?.name,
         },
+        checkins: match?.checkins?.map((checkin) => ({
+          id: checkin.id,
+          userId: checkin.userId,
+        })),
         createdAt: match.createdAt,
         updatedAt: match.updatedAt,
       }),

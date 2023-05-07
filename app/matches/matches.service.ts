@@ -46,7 +46,10 @@ export class MatchesService {
   }
 
   async findAll(teamId: string): Promise<MatchPayload[]> {
-    const query = this.matchesRepository.createQueryBuilder('matches').innerJoinAndSelect('matches.stadium', 'stadium')
+    const query = this.matchesRepository
+      .createQueryBuilder('matches')
+      .innerJoinAndSelect('matches.stadium', 'stadium')
+      .leftJoinAndSelect('matches.checkins', 'checkins')
 
     if (teamId) query.where('matches.teamId = :teamId', { teamId })
 
@@ -66,6 +69,7 @@ export class MatchesService {
       .createQueryBuilder('matches')
       .where('matches.id = :id', { id: matchId })
       .innerJoinAndSelect('matches.stadium', 'stadium')
+      .leftJoinAndSelect('matches.checkins', 'checkins')
 
     if (teamId) query.andWhere('matches.teamId = :teamId', { teamId })
 
