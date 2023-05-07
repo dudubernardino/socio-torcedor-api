@@ -1,6 +1,15 @@
 import { removeEmptyFields } from '@lib/utils'
 import { ApiProperty } from '@nestjs/swagger'
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 import { BaseEntityAPI } from './base.entity'
 import { MembershipEntity } from './membership.entity'
 import { StadiumSectorEntity } from './stadium-sector.entity'
@@ -13,6 +22,9 @@ export class PlanPayload {
 
   @ApiProperty()
   id: string
+
+  @ApiProperty()
+  description?: string
 
   @ApiProperty()
   price: number
@@ -57,6 +69,7 @@ export class PlanEntity extends BaseEntityAPI {
       removeEmptyFields({
         id: plan.id,
         name: plan.name,
+        description: plan.description,
         price: plan.price,
         sectors: plan?.sectors?.map((sector) => ({
           id: sector?.id,
