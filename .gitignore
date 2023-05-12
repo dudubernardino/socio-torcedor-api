@@ -43,3 +43,4 @@ lerna-debug.log*
 /infrastructure/terraform/credentials.json
 credentials.json
 
+summary.html

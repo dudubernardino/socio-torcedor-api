@@ -182,7 +182,7 @@ export class CheckinsService {
 
     if (errorMail) {
       this.logger.error(`${CheckinsService.name}[sendEmail - matchId: ${checkin?.matchId}]`, errorMail)
-      throw new UnprocessableEntityException('Something went wrong when trying to send email.')
+      //throw new UnprocessableEntityException('Something went wrong when trying to send email.')
     }
 
     return { message: 'Checkin sent to your registered email.' }
