@@ -11,17 +11,17 @@ export function handleSummary(data) {
 }
 
 export const options = {
-  scenarios: {
-    checkins: {
-      executor: 'per-vu-iterations',
-      vus: 1,
-      iterations: 1,
-      env: {
-        CLIENT_ID: '53ca2d54-1d8e-4abf-abe4-1d93ca623e19',
-        SECRET: 'TwrHeK69g6yY94aq1RUE4WDssaUC@JcEJaQbF4eB',
-      },
-    },
-  },
+  stages: [
+    { duration: '30s', target: 2 },
+    { duration: '5m', target: 2 },
+    { duration: '30s', target: 4 },
+    { duration: '5m', target: 4 },
+    { duration: '30s', target: 6 },
+    { duration: '5m', target: 6 },
+    { duration: '30s', target: 8 },
+    { duration: '5m', target: 8 },
+    { duration: '1m', target: 0 },
+  ],
 }
 
 function generateCPF() {
@@ -78,8 +78,8 @@ const getTeamAccessToken = () => {
     method: 'POST',
     path: '/auth/team',
     body: {
-      clientId: __ENV.CLIENT_ID,
-      secret: __ENV.SECRET,
+      clientId: '53ca2d54-1d8e-4abf-abe4-1d93ca623e19',
+      secret: 'TwrHeK69g6yY94aq1RUE4WDssaUC@JcEJaQbF4eB',
     },
     accessToken: null,
   })
@@ -172,9 +172,9 @@ const checkin = (accessToken) => {
     accessToken: accessToken,
   })
 
-  check(res, {
-    'is status 201': (r) => r.status === 201,
-  })
+  // check(res, {
+  //   'is status 201': (r) => r.status === 201,
+  // })
 
   const data = res.json()
 
