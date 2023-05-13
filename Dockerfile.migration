@@ -20,7 +20,7 @@ FROM alpine
 
 WORKDIR /usr/src
 
-RUN apk add --update --no-cache nodejs=18.14.2-r0 yarn &&  rm -rf /var/cache/apk/*
+RUN apk add --update --no-cache nodejs=18.16.0-r1 yarn &&  rm -rf /var/cache/apk/*
 
 RUN addgroup -g 1001 migrathor && adduser -S -u 1001 -G migrathor migrathor
 
